@@ -1,10 +1,10 @@
-﻿using Foundation;
+﻿//using Foundation;
 
-namespace WatchMe
-{
-    [Register("AppDelegate")]
-    public class AppDelegate : MauiUIApplicationDelegate
-    {
-        protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
-    }
-}
+//namespace WatchMe
+//{
+//    [Register("AppDelegate")]
+//    public class AppDelegate : MauiUIApplicationDelegate
+//    {
+//        protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
+//    }
+//}
