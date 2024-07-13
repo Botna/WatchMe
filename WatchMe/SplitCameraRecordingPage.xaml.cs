@@ -26,24 +26,32 @@ public partial class SplitCameraRecordingPage : ContentPage
 
     private void CameraViewBack_CamerasLoaded(object sender, EventArgs e)
     {
-        cameraViewBack.Camera = cameraViewBack.Cameras.First(x => x.Position == CameraPosition.Back);
-        MainThread.BeginInvokeOnMainThread(async () =>
+        var backCamera = cameraViewBack.Cameras.FirstOrDefault(x => x.Position == CameraPosition.Back);
+        if (backCamera != default)
         {
-            await cameraViewBack.StartCameraAsync();
-            var sizes = cameraViewBack.Camera.AvailableResolutions;
-            var lastSize = sizes.Last();
-            //var result = await cameraViewBack.StartRecordingAsync(Path.Combine(FileSystem.Current.CacheDirectory, $"Back_{VideoTimeStampSuffix}"), lastSize);
-        });
+            cameraViewBack.Camera = cameraViewBack.Cameras.First(x => x.Position == CameraPosition.Back);
+            MainThread.BeginInvokeOnMainThread(async () =>
+            {
+                await cameraViewBack.StartCameraAsync();
+                var sizes = cameraViewBack.Camera.AvailableResolutions;
+                var lastSize = sizes.Last();
+                //var result = await cameraViewBack.StartRecordingAsync(Path.Combine(FileSystem.Current.CacheDirectory, $"Back_{VideoTimeStampSuffix}"), lastSize);
+            });
+        }
     }
 
     private void CameraViewFront_CamerasLoaded(object sender, EventArgs e)
     {
-        cameraViewFront.Camera = cameraViewFront.Cameras.First(x => x.Position == CameraPosition.Front);
-        MainThread.BeginInvokeOnMainThread(async () =>
+        var frontCamera = cameraViewFront.Cameras.FirstOrDefault(x => x.Position == CameraPosition.Front);
+        if(frontCamera != default)
         {
-            await cameraViewFront.StartCameraAsync();
-            await StartScreenRecordingWhenFinalized();
-        });
+            cameraViewFront.Camera = frontCamera;
+            MainThread.BeginInvokeOnMainThread(async () =>
+            {
+                await cameraViewFront.StartCameraAsync();
+                await StartScreenRecordingWhenFinalized();
+            });
+        }
     }
 
     private async Task StartScreenRecordingWhenFinalized()
