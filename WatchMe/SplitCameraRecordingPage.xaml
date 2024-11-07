@@ -4,8 +4,7 @@
              x:Class="WatchMe.SplitCameraRecordingPage"
              Title="SplitCameraRecordingPage"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-             xmlns:cv="clr-namespace:Camera.MAUI;assembly=Camera.MAUI"
-             xmlns:cvp="clr-namespace:WatchMe.Library.Views;assembly=WatchMe.Library">
+             xmlns:cv="clr-namespace:Camera.MAUI;assembly=Camera.MAUI">
     <Grid Margin="20,35,20,20">
 
         <Grid.RowDefinitions>
@@ -18,7 +17,7 @@
         <Label Text="Back Camera View" 
                 HorizontalOptions="Center"
                 VerticalOptions="Center"/>
-
+        
         <cv:CameraView x:Name="cameraViewBack"
             Grid.Row="1"
             WidthRequest="300"
@@ -34,6 +33,5 @@
             WidthRequest="300"
             HeightRequest="300"/>
 
-        <cvp:CameraViewPane x:Name="cameraViewPaneFront"/>
     </Grid>
 </ContentPage>
