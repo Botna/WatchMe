@@ -7,6 +7,7 @@ using Azure.Storage.Blobs;
 #endif
 using Camera.MAUI;
 using Plugin.Maui.ScreenRecording;
+using System.Collections.Concurrent;
 
 namespace WatchMe;
 
@@ -14,48 +15,64 @@ public partial class SplitCameraRecordingPage : ContentPage
 {
     private readonly string _videoTimeStampSuffix;
     private readonly IScreenRecording _screenRecorder;
+    private readonly ConcurrentBag<string> camerasLoaded = new ConcurrentBag<string>();
     public SplitCameraRecordingPage()
     {
         InitializeComponent();
         cameraViewBack.CamerasLoaded += CameraViewBack_CamerasLoaded;
         cameraViewFront.CamerasLoaded += CameraViewFront_CamerasLoaded;
-        _videoTimeStampSuffix = DateTime.UtcNow.ToString("yyyyMMddHHmmssffff");
 
-        //_screenRecorder = ScreenRecording.Default;
+        cameraViewPaneFront.CamerasLoaded += CameraViewPane_CamerasLoaded;
     }
 
+    private void CameraViewPane_CamerasLoaded(object sender, EventArgs e)
+    {
+
+    }
     private void CameraViewBack_CamerasLoaded(object sender, EventArgs e)
     {
-        var backCamera = cameraViewBack.Cameras.FirstOrDefault(x => x.Position == CameraPosition.Back);
-        if (backCamera != default)
+        camerasLoaded.Add("front");
+
+        MainThread.BeginInvokeOnMainThread(async () =>
         {
-            cameraViewBack.Camera = cameraViewBack.Cameras.First(x => x.Position == CameraPosition.Back);
-            MainThread.BeginInvokeOnMainThread(async () =>
-            {
-                await cameraViewBack.StartCameraAsync();
-                var sizes = cameraViewBack.Camera.AvailableResolutions;
-                var lastSize = sizes.Last();
-                //var result = await cameraViewBack.StartRecordingAsync(Path.Combine(FileSystem.Current.CacheDirectory, $"Back_{VideoTimeStampSuffix}"), lastSize);
-            });
-        }
+            await StartRecordingWhenBothCamerasLoaded();
+        });
     }
 
     private void CameraViewFront_CamerasLoaded(object sender, EventArgs e)
     {
-        var frontCamera = cameraViewFront.Cameras.FirstOrDefault(x => x.Position == CameraPosition.Front);
-        if(frontCamera != default)
+        camerasLoaded.Add("back");
+        MainThread.BeginInvokeOnMainThread(async () =>
         {
-            cameraViewFront.Camera = frontCamera;
-            MainThread.BeginInvokeOnMainThread(async () =>
-            {
-                await cameraViewFront.StartCameraAsync();
-                await StartScreenRecordingWhenFinalized();
-            });
-        }
+            await StartRecordingWhenBothCamerasLoaded();
+        });
     }
 
-    private async Task StartScreenRecordingWhenFinalized()
+    private async Task StartRecordingWhenBothCamerasLoaded()
     {
+        var frontCamera = cameraViewFront.Cameras.FirstOrDefault(x => x.Position == CameraPosition.Front);
+        var backCamera = cameraViewBack.Cameras.FirstOrDefault(x => x.Position == CameraPosition.Back);
+        if(camerasLoaded.Count() == 1)
+        {
+            return;
+        }
+
+        cameraViewFront.Camera = frontCamera;
+        cameraViewBack.Camera = backCamera;
+
+        await cameraViewBack.StartCameraAsync();
+        await cameraViewFront.StartCameraAsync();
+        var frontSizes = cameraViewFront.Camera.AvailableResolutions;
+        var lastFrontSize = frontSizes.Last();
+
+        var backSizes = cameraViewBack.Camera.AvailableResolutions;
+        var lastBackSize = backSizes.Last();
+
+        //var frontRecordTask = cameraViewFront.StartRecordingAsync(Path.Combine(FileSystem.Current.CacheDirectory, $"Front"), lastFrontSize);
+        //var backRecordTask = cameraViewBack.StartRecordingAsync(Path.Combine(FileSystem.Current.CacheDirectory, $"Front"), lastBackSize);
+
+
+        //var result = await Task.WhenAll(frontRecordTask, backRecordTask);
         //if (_screenRecorder.IsSupported)
         //{
         //    ScreenRecordingOptions screenRecordOptions = new()
