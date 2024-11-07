@@ -3,7 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WatchMe", "WatchMe.csproj", "{1A89E79F-D4D8-4762-B326-E6CA96BAD968}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WatchMe", "WatchMe.csproj", "{1A89E79F-D4D8-4762-B326-E6CA96BAD968}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Camera.MAUI", "..\..\Camera.MAUI\Camera.MAUI\Camera.MAUI.csproj", "{1ADEB7E5-421E-4441-854E-873E355226F6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WatchMe.Library", "..\WatchMe.Library\WatchMe.Library.csproj", "{0BE1A17F-6674-46F0-9003-F602ECD47F5C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,6 +21,14 @@ Global
 		{1A89E79F-D4D8-4762-B326-E6CA96BAD968}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1A89E79F-D4D8-4762-B326-E6CA96BAD968}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1A89E79F-D4D8-4762-B326-E6CA96BAD968}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{1ADEB7E5-421E-4441-854E-873E355226F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1ADEB7E5-421E-4441-854E-873E355226F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1ADEB7E5-421E-4441-854E-873E355226F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1ADEB7E5-421E-4441-854E-873E355226F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0BE1A17F-6674-46F0-9003-F602ECD47F5C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0BE1A17F-6674-46F0-9003-F602ECD47F5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0BE1A17F-6674-46F0-9003-F602ECD47F5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0BE1A17F-6674-46F0-9003-F602ECD47F5C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

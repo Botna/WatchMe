@@ -1,12 +1,14 @@
 #if ANDROID
-using Android.Telephony;
-using Azure.Storage.Blobs.Models;
-
-using Azure.Storage.Blobs;
-
+//using Android.Telephony;
+using Android.Content;
+using Android.Provider;
 #endif
+//using Azure.Storage.Blobs.Models;
+//using Azure.Storage.Blobs;
 using Camera.MAUI;
 using Plugin.Maui.ScreenRecording;
+using System.Collections.Concurrent;
+
 
 namespace WatchMe;
 
@@ -14,6 +16,7 @@ public partial class SplitCameraRecordingPage : ContentPage
 {
     private readonly string _videoTimeStampSuffix;
     private readonly IScreenRecording _screenRecorder;
+    private readonly ConcurrentBag<string> camerasLoaded = new ConcurrentBag<string>();
     public SplitCameraRecordingPage()
     {
         InitializeComponent();
@@ -21,110 +24,122 @@ public partial class SplitCameraRecordingPage : ContentPage
         cameraViewFront.CamerasLoaded += CameraViewFront_CamerasLoaded;
         _videoTimeStampSuffix = DateTime.UtcNow.ToString("yyyyMMddHHmmssffff");
 
-        //_screenRecorder = ScreenRecording.Default;
     }
 
     private void CameraViewBack_CamerasLoaded(object sender, EventArgs e)
     {
-        var backCamera = cameraViewBack.Cameras.FirstOrDefault(x => x.Position == CameraPosition.Back);
-        if (backCamera != default)
+        camerasLoaded.Add("front");
+
+        MainThread.BeginInvokeOnMainThread(async () =>
         {
-            cameraViewBack.Camera = cameraViewBack.Cameras.First(x => x.Position == CameraPosition.Back);
-            MainThread.BeginInvokeOnMainThread(async () =>
-            {
-                await cameraViewBack.StartCameraAsync();
-                var sizes = cameraViewBack.Camera.AvailableResolutions;
-                var lastSize = sizes.Last();
-                //var result = await cameraViewBack.StartRecordingAsync(Path.Combine(FileSystem.Current.CacheDirectory, $"Back_{VideoTimeStampSuffix}"), lastSize);
-            });
-        }
+            await StartRecordingWhenBothCamerasLoaded();
+        });
     }
 
     private void CameraViewFront_CamerasLoaded(object sender, EventArgs e)
     {
-        var frontCamera = cameraViewFront.Cameras.FirstOrDefault(x => x.Position == CameraPosition.Front);
-        if(frontCamera != default)
+        camerasLoaded.Add("back");
+        MainThread.BeginInvokeOnMainThread(async () =>
         {
-            cameraViewFront.Camera = frontCamera;
-            MainThread.BeginInvokeOnMainThread(async () =>
-            {
-                await cameraViewFront.StartCameraAsync();
-                await StartScreenRecordingWhenFinalized();
-            });
-        }
+            await StartRecordingWhenBothCamerasLoaded();
+        });
     }
 
-    private async Task StartScreenRecordingWhenFinalized()
+    private async Task StartRecordingWhenBothCamerasLoaded()
     {
-        //if (_screenRecorder.IsSupported)
-        //{
-        //    ScreenRecordingOptions screenRecordOptions = new()
-        //    {
-        //        EnableMicrophone = true,
-        //        SaveToGallery = true,
-        //        SavePath = Path.Combine(Path.GetTempPath(), $"{_videoTimeStampSuffix}.mp4")
-        //    };
+        var frontCamera = cameraViewFront.Cameras.FirstOrDefault(x => x.Position == CameraPosition.Front);
+        var backCamera = cameraViewBack.Cameras.FirstOrDefault(x => x.Position == CameraPosition.Back);
+        if (camerasLoaded.Count() == 1)
+        {
+            return;
+        }
 
-        //    _screenRecorder.StartRecording(screenRecordOptions);
-        //}
+        cameraViewFront.Camera = frontCamera;
+        cameraViewBack.Camera = backCamera;
 
-#if ANDROID
+        var frontSizes = cameraViewFront.Camera.AvailableResolutions;
+        var lastFrontSize = frontSizes.Last();
 
-        //PermissionStatus status = await Permissions.CheckStatusAsync<Permissions.Sms>();
-        //if (status != PermissionStatus.Granted)
-        //{
-        //    status = await Permissions.RequestAsync<Permissions.Sms>();
-        //}
+        var backSizes = cameraViewBack.Camera.AvailableResolutions;
+        var lastBackSize = backSizes.Last();
 
-        //var smsM = SmsManager.Default;
-        //smsM.SendTextMessage("5037029686", null, "Hi Carrie, im recording stuff", null, null);
-#endif
+        var frontRecordTask = await cameraViewFront.StartRecordingAsync(Path.Combine(FileSystem.Current.CacheDirectory, $"Front_{_videoTimeStampSuffix}.mp4"), lastFrontSize);
+        var backRecordTask = await cameraViewBack.StartRecordingAsync(Path.Combine(FileSystem.Current.CacheDirectory, $"Back_{_videoTimeStampSuffix}.mp4"), lastBackSize);
+
     }
 
     protected override async void OnNavigatingFrom(NavigatingFromEventArgs e)
     {
-        //var result = await cameraViewFront.StopRecordingAsync();
-        //result = await cameraViewBack.StopRecordingAsync();
+        var result = await cameraViewFront.StopRecordingAsync();
+        result = await cameraViewBack.StopRecordingAsync();
 
 
-        //var paths = Directory.GetFiles(FileSystem.Current.CacheDirectory, "*");
+        var paths = Directory.GetFiles(FileSystem.Current.CacheDirectory, "*");
 
-        //var rawVideoBytes = await File.ReadAllBytesAsync(Path.Combine(FileSystem.Current.CacheDirectory, $"Back_{_videoTimeStampSuffix}"));
-        //var file = await _screenRecorder.StopRecording();
+        var backVideoBytes = await File.ReadAllBytesAsync(Path.Combine(FileSystem.Current.CacheDirectory, $"Back_{_videoTimeStampSuffix}.mp4"));
+        var frontVideoBytes = await File.ReadAllBytesAsync(Path.Combine(FileSystem.Current.CacheDirectory, $"Front_{_videoTimeStampSuffix}.mp4"));
 #if ANDROID
-        //await UploadFileStream(file);
+        var saveResult =  SaveToLocalDevice(backVideoBytes, $"Back_{_videoTimeStampSuffix}.mp4");
+        saveResult = SaveToLocalDevice(frontVideoBytes, $"Front_{_videoTimeStampSuffix}.mp4");
 #endif
 
     }
 
-    private async Task UploadFileStream(ScreenRecordingFile file)
+#if ANDROID
+    private bool SaveToLocalDevice(byte[] videoBytes, string fileName)
     {
-#if ANDROID
-
-        var filepath = file.FullPath;
-        var blobServiceClient = new BlobServiceClient("redacted");
-
-        string containerName = "fraudproofcontainer";
-        var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
-
-
-        BlobClient blobClient = containerClient.GetBlobClient(file.FileName);
-        var result = await blobClient.UploadAsync(filepath, true);
-
-        await foreach (BlobItem blobItem in containerClient.GetBlobsAsync())
+        var context = Platform.CurrentActivity;
+        var resolver = context.ContentResolver;
+        var contentValues = new ContentValues();
+        contentValues.Put(MediaStore.IMediaColumns.DisplayName, fileName);
+        contentValues.Put(MediaStore.Files.IFileColumns.MimeType, "video/mp4");
+        contentValues.Put(MediaStore.IMediaColumns.RelativePath, "DCIM/WatchMeVideoCaptures");
+        try
         {
-            Console.WriteLine("\t" + blobItem.Name);
+            var videoUri = resolver.Insert(MediaStore.Video.Media.ExternalContentUri, contentValues);
+            var output = resolver.OpenOutputStream(videoUri);
+            output.Write(videoBytes, 0, videoBytes.Length);
+            output.Flush();
+            output.Close();
+            output.Dispose();
         }
-        //if( await blobServiceClient.GetBlobContainersAsync() {
-        //// Create the container and return a container client object
-        //BlobContainerClient containerClient = await blobServiceClient.CreateBlobContainerAsync(containerName);
-
-        //BlobContainerClient blobContainer = new BlobContainerClient(connectionString, containerName);
-
-        //BlobClient blobClient = blobContainer.GetBlobClient("myTestFile.txt");
-
-        //var result = await blobClient.UploadAsync(BinaryData.FromString("Hello"), true);
+        catch (Exception ex)
+        {
+            Console.Write(ex.ToString());
+            return false;
+        }
+        contentValues.Put(MediaStore.IMediaColumns.IsPending, 1);
+        return true;
+    }
 #endif
 
-    }
+
+
+    //Maybe use later for Azure upload.
+    //private async Task UploadFileStream(ScreenRecordingFile file)
+    //{
+    //    var filepath = file.FullPath;
+    //    var blobServiceClient = new BlobServiceClient("redacted");
+
+    //    string containerName = "fraudproofcontainer";
+    //    var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+
+
+    //    BlobClient blobClient = containerClient.GetBlobClient(file.FileName);
+    //    var result = await blobClient.UploadAsync(filepath, true);
+
+    //    await foreach (BlobItem blobItem in containerClient.GetBlobsAsync())
+    //    {
+    //        Console.WriteLine("\t" + blobItem.Name);
+    //    }
+    //    if (await blobServiceClient.GetBlobContainersAsync() {
+    //        //// Create the container and return a container client object
+    //        BlobContainerClient containerClient = await blobServiceClient.CreateBlobContainerAsync(containerName);
+
+    //        BlobContainerClient blobContainer = new BlobContainerClient(connectionString, containerName);
+
+    //        BlobClient blobClient = blobContainer.GetBlobClient("myTestFile.txt");
+
+    //        var result = await blobClient.UploadAsync(BinaryData.FromString("Hello"), true);
+    //    }
 }

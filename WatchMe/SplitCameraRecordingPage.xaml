@@ -17,7 +17,7 @@
         <Label Text="Back Camera View" 
                 HorizontalOptions="Center"
                 VerticalOptions="Center"/>
-
+        
         <cv:CameraView x:Name="cameraViewBack"
             Grid.Row="1"
             WidthRequest="300"
