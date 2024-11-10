@@ -1,13 +1,7 @@
-#if ANDROID
-//using Android.Telephony;
-using Android.Content;
-using Android.Provider;
-#endif
-//using Azure.Storage.Blobs.Models;
-//using Azure.Storage.Blobs;
 using Camera.MAUI;
 using Plugin.Maui.ScreenRecording;
 using System.Collections.Concurrent;
+using WatchMe.Repository;
 
 
 namespace WatchMe;
@@ -17,12 +11,15 @@ public partial class SplitCameraRecordingPage : ContentPage
     private readonly string _videoTimeStampSuffix;
     private readonly IScreenRecording _screenRecorder;
     private readonly ConcurrentBag<string> camerasLoaded = new ConcurrentBag<string>();
-    public SplitCameraRecordingPage()
+    private readonly IFileSystemServiceFactory _fileSystemServiceFactory;
+    public SplitCameraRecordingPage(IFileSystemServiceFactory fileSystemServiceFactory)
     {
         InitializeComponent();
         cameraViewBack.CamerasLoaded += CameraViewBack_CamerasLoaded;
         cameraViewFront.CamerasLoaded += CameraViewFront_CamerasLoaded;
         _videoTimeStampSuffix = DateTime.UtcNow.ToString("yyyyMMddHHmmssffff");
+
+        _fileSystemServiceFactory = fileSystemServiceFactory;
 
     }
 
@@ -68,6 +65,7 @@ public partial class SplitCameraRecordingPage : ContentPage
 
     }
 
+    //TODO, will be kicked off via other processes later.
     protected override async void OnNavigatingFrom(NavigatingFromEventArgs e)
     {
         var result = await cameraViewFront.StopRecordingAsync();
@@ -78,42 +76,12 @@ public partial class SplitCameraRecordingPage : ContentPage
 
         var backVideoBytes = await File.ReadAllBytesAsync(Path.Combine(FileSystem.Current.CacheDirectory, $"Back_{_videoTimeStampSuffix}.mp4"));
         var frontVideoBytes = await File.ReadAllBytesAsync(Path.Combine(FileSystem.Current.CacheDirectory, $"Front_{_videoTimeStampSuffix}.mp4"));
-#if ANDROID
-        var saveResult =  SaveToLocalDevice(backVideoBytes, $"Back_{_videoTimeStampSuffix}.mp4");
-        saveResult = SaveToLocalDevice(frontVideoBytes, $"Front_{_videoTimeStampSuffix}.mp4");
-#endif
 
+        var fileSystemService = _fileSystemServiceFactory.GetVideoRepository();
+
+        var backResult = fileSystemService.SaveVideoToFileSystem(backVideoBytes, $"Back_{_videoTimeStampSuffix}.mp4");
+        var frontResult = fileSystemService.SaveVideoToFileSystem(frontVideoBytes, $"Front_{_videoTimeStampSuffix}.mp4");
     }
-
-#if ANDROID
-    private bool SaveToLocalDevice(byte[] videoBytes, string fileName)
-    {
-        var context = Platform.CurrentActivity;
-        var resolver = context.ContentResolver;
-        var contentValues = new ContentValues();
-        contentValues.Put(MediaStore.IMediaColumns.DisplayName, fileName);
-        contentValues.Put(MediaStore.Files.IFileColumns.MimeType, "video/mp4");
-        contentValues.Put(MediaStore.IMediaColumns.RelativePath, "DCIM/WatchMeVideoCaptures");
-        try
-        {
-            var videoUri = resolver.Insert(MediaStore.Video.Media.ExternalContentUri, contentValues);
-            var output = resolver.OpenOutputStream(videoUri);
-            output.Write(videoBytes, 0, videoBytes.Length);
-            output.Flush();
-            output.Close();
-            output.Dispose();
-        }
-        catch (Exception ex)
-        {
-            Console.Write(ex.ToString());
-            return false;
-        }
-        contentValues.Put(MediaStore.IMediaColumns.IsPending, 1);
-        return true;
-    }
-#endif
-
-
 
     //Maybe use later for Azure upload.
     //private async Task UploadFileStream(ScreenRecordingFile file)
