@@ -1,12 +1,13 @@
 ﻿#if ANDROID
 using Android.Content;
 using Android.Provider;
+using WatchMe.Repository;
 
-namespace WatchMe.Repository.Implementations
+namespace WatchMe.Persistance.Implementations
 {
-    public class AndroidVideoRepository : IVideoRepository
+    public class AndroidFileSystemService : IFileSystemService
     {
-        public AndroidVideoRepository() { }
+        public AndroidFileSystemService() { }
         public bool SaveVideoToFileSystem(byte[] videoBytes, string fileName)
         {
             var context = Platform.CurrentActivity;

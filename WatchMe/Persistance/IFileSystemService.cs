@@ -1,6 +1,6 @@
 ﻿namespace WatchMe.Repository
 {
-    public interface IVideoRepository
+    public interface IFileSystemService
     {
         bool SaveVideoToFileSystem(byte[] videoBytes, string fileName);
         byte[] LoadVideFromFileSystem(string filename);

@@ -21,7 +21,8 @@ namespace WatchMe
                 });
 
             builder.Services.AddTransient<SplitCameraRecordingPage>();
-            builder.Services.AddTransient<IVideoRepositoryFactory, VideoRepositoryFactory>();
+            builder.Services.AddTransient<IFileSystemServiceFactory, FileSystemServiceFactory>();
+            builder.Services.AddSingleton<MainPage>();
 
 #if DEBUG
             builder.Logging.AddDebug();

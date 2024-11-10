@@ -1,10 +1,11 @@
-﻿#if IOS
+﻿
+#if IOS
+using WatchMe.Repository;
 
-
-namespace WatchMe.Repository.Implementations
+namespace WatchMe.Persistance.Implementations
 {
 
-    internal class AppleVideoRepository : IVideoRepository
+    internal class IOSFileSystemService : IFileSystemService
     {
         public byte[] LoadVideFromFileSystem(string filename)
         {
