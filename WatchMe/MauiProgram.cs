@@ -1,6 +1,7 @@
 ﻿using Camera.MAUI;
 using Microsoft.Extensions.Logging;
 using Plugin.Maui.ScreenRecording;
+using WatchMe.Repository;
 
 namespace WatchMe
 {
@@ -19,8 +20,11 @@ namespace WatchMe
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
 
+            builder.Services.AddTransient<SplitCameraRecordingPage>();
+            builder.Services.AddTransient<IVideoRepositoryFactory, VideoRepositoryFactory>();
+
 #if DEBUG
-    		builder.Logging.AddDebug();
+            builder.Logging.AddDebug();
 #endif
 
             return builder.Build();

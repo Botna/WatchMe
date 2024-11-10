@@ -2,16 +2,17 @@
 {
     public partial class MainPage : ContentPage
     {
-        int count = 0;
+        public readonly SplitCameraRecordingPage _recordingPage;
 
-        public MainPage()
+        public MainPage(SplitCameraRecordingPage recordingPage)
         {
             InitializeComponent();
+            _recordingPage = recordingPage;
         }
 
         private async void OnWatchMeInitiate(object sender, EventArgs e)
         {
-            await Navigation.PushAsync(new SplitCameraRecordingPage());
+            await Navigation.PushAsync(_recordingPage);
         }
     }
 }
