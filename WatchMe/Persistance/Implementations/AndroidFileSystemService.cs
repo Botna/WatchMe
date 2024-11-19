@@ -36,10 +36,8 @@ namespace WatchMe.Persistance.Implementations
             return true;
         }
 
-        public byte[] LoadVideFromFileSystem(string filename)
-        {
-            throw new NotImplementedException();
-        }
+        public FileStream GetFileStreamOfFile(string fullFilePath) =>
+            new FileStream(fullFilePath, FileMode.Open);
     }
 }
 #endif

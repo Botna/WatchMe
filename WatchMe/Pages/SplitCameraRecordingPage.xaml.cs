@@ -1,6 +1,7 @@
 using Camera.MAUI;
 using Plugin.Maui.ScreenRecording;
 using System.Collections.Concurrent;
+using WatchMe.Persistance;
 using WatchMe.Repository;
 
 
@@ -12,7 +13,9 @@ public partial class SplitCameraRecordingPage : ContentPage
     private readonly IScreenRecording _screenRecorder;
     private readonly ConcurrentBag<string> camerasLoaded = new ConcurrentBag<string>();
     private readonly IFileSystemServiceFactory _fileSystemServiceFactory;
-    public SplitCameraRecordingPage(IFileSystemServiceFactory fileSystemServiceFactory)
+    private readonly ICloudProviderService _cloudProviderService;
+
+    public SplitCameraRecordingPage(IFileSystemServiceFactory fileSystemServiceFactory, ICloudProviderService cloudProviderService)
     {
         InitializeComponent();
         cameraViewBack.CamerasLoaded += CameraViewBack_CamerasLoaded;
@@ -20,7 +23,7 @@ public partial class SplitCameraRecordingPage : ContentPage
         _videoTimeStampSuffix = DateTime.UtcNow.ToString("yyyyMMddHHmmssffff");
 
         _fileSystemServiceFactory = fileSystemServiceFactory;
-
+        _cloudProviderService = cloudProviderService;
     }
 
     private void CameraViewBack_CamerasLoaded(object sender, EventArgs e)
@@ -81,33 +84,11 @@ public partial class SplitCameraRecordingPage : ContentPage
 
         var backResult = fileSystemService.SaveVideoToFileSystem(backVideoBytes, $"Back_{_videoTimeStampSuffix}.mp4");
         var frontResult = fileSystemService.SaveVideoToFileSystem(frontVideoBytes, $"Front_{_videoTimeStampSuffix}.mp4");
+
+        var backFileStream = fileSystemService.GetFileStreamOfFile(Path.Combine(FileSystem.Current.CacheDirectory, $"Back_{_videoTimeStampSuffix}.mp4"));
+        await _cloudProviderService.UploadContentToCloud(backFileStream, $"Back_{_videoTimeStampSuffix}.mp4");
+
+        var frontFileStream = fileSystemService.GetFileStreamOfFile(Path.Combine(FileSystem.Current.CacheDirectory, $"Front_{_videoTimeStampSuffix}.mp4"));
+        await _cloudProviderService.UploadContentToCloud(frontFileStream, $"Front_{_videoTimeStampSuffix}.mp4");
     }
-
-    //Maybe use later for Azure upload.
-    //private async Task UploadFileStream(ScreenRecordingFile file)
-    //{
-    //    var filepath = file.FullPath;
-    //    var blobServiceClient = new BlobServiceClient("redacted");
-
-    //    string containerName = "fraudproofcontainer";
-    //    var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
-
-
-    //    BlobClient blobClient = containerClient.GetBlobClient(file.FileName);
-    //    var result = await blobClient.UploadAsync(filepath, true);
-
-    //    await foreach (BlobItem blobItem in containerClient.GetBlobsAsync())
-    //    {
-    //        Console.WriteLine("\t" + blobItem.Name);
-    //    }
-    //    if (await blobServiceClient.GetBlobContainersAsync() {
-    //        //// Create the container and return a container client object
-    //        BlobContainerClient containerClient = await blobServiceClient.CreateBlobContainerAsync(containerName);
-
-    //        BlobContainerClient blobContainer = new BlobContainerClient(connectionString, containerName);
-
-    //        BlobClient blobClient = blobContainer.GetBlobClient("myTestFile.txt");
-
-    //        var result = await blobClient.UploadAsync(BinaryData.FromString("Hello"), true);
-    //    }
 }
