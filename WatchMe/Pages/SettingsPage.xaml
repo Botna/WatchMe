@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="WatchMe.Pages.SettingsPage"
+             Title="SettingsPage">
+    <VerticalStackLayout
+    Padding="30,0"
+    Spacing="25"
+    VerticalOptions="Fill"
+    HorizontalOptions="Fill" >
+
+        <Label Text="Settings" />
+        <Entry x:Name="azure_storage_container_connstr"
+            Placeholder="Azure Storage Container Connection string..."
+            TextChanged="OnEntryTextChanged"/>
+        <Button
+    Text="Save" 
+    SemanticProperties.Hint="Save Settings configuration"
+    Clicked="OnSettingsPageSave"
+    HorizontalOptions="Fill" />
+    </VerticalStackLayout>
+</ContentPage>

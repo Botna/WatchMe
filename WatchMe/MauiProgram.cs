@@ -1,6 +1,10 @@
 ﻿using Camera.MAUI;
+using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
 using Plugin.Maui.ScreenRecording;
+using WatchMe.Pages;
+using WatchMe.Persistance;
+using WatchMe.Persistance.Implementations;
 using WatchMe.Repository;
 
 namespace WatchMe
@@ -12,6 +16,7 @@ namespace WatchMe
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
+                .UseMauiCommunityToolkit()
                 .UseMauiCameraView()
                 .UseScreenRecording()
                 .ConfigureFonts(fonts =>
@@ -21,7 +26,9 @@ namespace WatchMe
                 });
 
             builder.Services.AddTransient<SplitCameraRecordingPage>();
+            builder.Services.AddTransient<SettingsPage>();
             builder.Services.AddTransient<IFileSystemServiceFactory, FileSystemServiceFactory>();
+            builder.Services.AddTransient<ICloudProviderService, CloudProviderService>();
             builder.Services.AddSingleton<MainPage>();
 
 #if DEBUG

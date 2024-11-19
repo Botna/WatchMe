@@ -15,7 +15,13 @@
             <Button
                 Text="Watch Me" 
                 SemanticProperties.Hint="Activates the Watch Me recording routine"
-                Clicked="OnWatchMeInitiate"
+                Clicked="OnRecordingPageNav"
+                HorizontalOptions="Fill" />
+
+            <Button
+                Text="Settings" 
+                SemanticProperties.Hint="Set configurations for WatchMe"
+                Clicked="OnSettingsPageNav"
                 HorizontalOptions="Fill" />
         </VerticalStackLayout>
     </ScrollView>
