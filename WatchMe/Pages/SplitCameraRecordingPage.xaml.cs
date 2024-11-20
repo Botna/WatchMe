@@ -1,8 +1,7 @@
 using Camera.MAUI;
 using Plugin.Maui.ScreenRecording;
 using System.Collections.Concurrent;
-using WatchMe.Persistance;
-using WatchMe.Repository;
+using WatchMe.Services;
 
 
 namespace WatchMe;
@@ -12,18 +11,16 @@ public partial class SplitCameraRecordingPage : ContentPage
     private readonly string _videoTimeStampSuffix;
     private readonly IScreenRecording _screenRecorder;
     private readonly ConcurrentBag<string> camerasLoaded = new ConcurrentBag<string>();
-    private readonly IFileSystemServiceFactory _fileSystemServiceFactory;
-    private readonly ICloudProviderService _cloudProviderService;
+    private readonly IOrchestrationService _orchestrationService;
 
-    public SplitCameraRecordingPage(IFileSystemServiceFactory fileSystemServiceFactory, ICloudProviderService cloudProviderService)
+    public SplitCameraRecordingPage(IOrchestrationService orchestrationService)
     {
         InitializeComponent();
         cameraViewBack.CamerasLoaded += CameraViewBack_CamerasLoaded;
         cameraViewFront.CamerasLoaded += CameraViewFront_CamerasLoaded;
         _videoTimeStampSuffix = DateTime.UtcNow.ToString("yyyyMMddHHmmssffff");
 
-        _fileSystemServiceFactory = fileSystemServiceFactory;
-        _cloudProviderService = cloudProviderService;
+        _orchestrationService = orchestrationService;
     }
 
     private void CameraViewBack_CamerasLoaded(object sender, EventArgs e)
@@ -71,24 +68,15 @@ public partial class SplitCameraRecordingPage : ContentPage
     //TODO, will be kicked off via other processes later.
     protected override async void OnNavigatingFrom(NavigatingFromEventArgs e)
     {
+        var frontFileName = $"Front_{_videoTimeStampSuffix}.mp4";
+        var backFileName = $"Back_{_videoTimeStampSuffix}.mp4";
+
         var result = await cameraViewFront.StopRecordingAsync();
         result = await cameraViewBack.StopRecordingAsync();
 
+        var backFileTask = _orchestrationService.ProcessSavedFile(backFileName, FileSystem.Current.CacheDirectory);
+        var frontFileTask = _orchestrationService.ProcessSavedFile(frontFileName, FileSystem.Current.CacheDirectory);
 
-        var paths = Directory.GetFiles(FileSystem.Current.CacheDirectory, "*");
-
-        var backVideoBytes = await File.ReadAllBytesAsync(Path.Combine(FileSystem.Current.CacheDirectory, $"Back_{_videoTimeStampSuffix}.mp4"));
-        var frontVideoBytes = await File.ReadAllBytesAsync(Path.Combine(FileSystem.Current.CacheDirectory, $"Front_{_videoTimeStampSuffix}.mp4"));
-
-        var fileSystemService = _fileSystemServiceFactory.GetVideoRepository();
-
-        var backResult = fileSystemService.SaveVideoToFileSystem(backVideoBytes, $"Back_{_videoTimeStampSuffix}.mp4");
-        var frontResult = fileSystemService.SaveVideoToFileSystem(frontVideoBytes, $"Front_{_videoTimeStampSuffix}.mp4");
-
-        var backFileStream = fileSystemService.GetFileStreamOfFile(Path.Combine(FileSystem.Current.CacheDirectory, $"Back_{_videoTimeStampSuffix}.mp4"));
-        await _cloudProviderService.UploadContentToCloud(backFileStream, $"Back_{_videoTimeStampSuffix}.mp4");
-
-        var frontFileStream = fileSystemService.GetFileStreamOfFile(Path.Combine(FileSystem.Current.CacheDirectory, $"Front_{_videoTimeStampSuffix}.mp4"));
-        await _cloudProviderService.UploadContentToCloud(frontFileStream, $"Front_{_videoTimeStampSuffix}.mp4");
+        await Task.WhenAll(backFileTask, frontFileTask);
     }
 }

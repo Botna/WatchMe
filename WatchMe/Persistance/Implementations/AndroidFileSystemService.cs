@@ -5,10 +5,10 @@ using WatchMe.Repository;
 
 namespace WatchMe.Persistance.Implementations
 {
-    public class AndroidFileSystemService : IFileSystemService
+    public class AndroidFileSystemService : BaseFileSystemService
     {
         public AndroidFileSystemService() { }
-        public bool SaveVideoToFileSystem(byte[] videoBytes, string fileName)
+        public override bool SaveVideoToFileSystem(byte[] videoBytes, string fileName)
         {
             var context = Platform.CurrentActivity;
             var resolver = context.ContentResolver;
@@ -36,7 +36,7 @@ namespace WatchMe.Persistance.Implementations
             return true;
         }
 
-        public FileStream GetFileStreamOfFile(string fullFilePath) =>
+        public override FileStream GetFileStreamOfFile(string fullFilePath) =>
             new FileStream(fullFilePath, FileMode.Open);
     }
 }

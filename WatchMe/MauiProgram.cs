@@ -2,10 +2,9 @@
 using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
 using Plugin.Maui.ScreenRecording;
+using WatchMe.Extensions;
 using WatchMe.Pages;
 using WatchMe.Persistance;
-using WatchMe.Persistance.Implementations;
-using WatchMe.Repository;
 
 namespace WatchMe
 {
@@ -25,11 +24,15 @@ namespace WatchMe
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
 
+            builder.AddPlatformSpecificDependancyInjection();
+
+            //Platform independant
+            builder.Services.AddSingleton<MainPage>();
             builder.Services.AddTransient<SplitCameraRecordingPage>();
             builder.Services.AddTransient<SettingsPage>();
-            builder.Services.AddTransient<IFileSystemServiceFactory, FileSystemServiceFactory>();
+
             builder.Services.AddTransient<ICloudProviderService, CloudProviderService>();
-            builder.Services.AddSingleton<MainPage>();
+
 
 #if DEBUG
             builder.Logging.AddDebug();
