@@ -5,6 +5,7 @@ using Plugin.Maui.ScreenRecording;
 using WatchMe.Extensions;
 using WatchMe.Pages;
 using WatchMe.Persistance;
+using WatchMe.Services;
 
 namespace WatchMe
 {
@@ -31,6 +32,7 @@ namespace WatchMe
             builder.Services.AddTransient<SplitCameraRecordingPage>();
             builder.Services.AddTransient<SettingsPage>();
 
+            builder.Services.AddTransient<IOrchestrationService, OrchestrationService>();
             builder.Services.AddTransient<ICloudProviderService, CloudProviderService>();
 
 

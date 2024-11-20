@@ -12,6 +12,10 @@ namespace WatchMe.Extensions
             builder.Services.AddTransient<IFileSystemService, AndroidFileSystemService>();
 #endif
 
+#if __ANDROID__
+            var thing = 0; thing++;
+#endif
+
 #if IOS
             builder.Services.AddTransient<IFileSystemService, IOSFileSystemService>();
 #endif
