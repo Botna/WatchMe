@@ -3,6 +3,12 @@ using CommunityToolkit.Maui.Core;
 using WatchMe.Pages;
 using WatchMe.Persistance;
 
+#if ANDROID
+using Android.App;
+using Android.Net.Wifi;
+#endif
+
+
 namespace WatchMe
 {
     public partial class MainPage : ContentPage
@@ -17,6 +23,8 @@ namespace WatchMe
             _recordingPage = recordingPage;
             _settingsPage = settingsPage;
             _cloudProviderService = cloudProviderService;
+
+
         }
 
         private async void OnRecordingPageNav(object sender, EventArgs e)

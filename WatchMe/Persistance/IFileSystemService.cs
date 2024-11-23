@@ -2,7 +2,8 @@
 {
     public interface IFileSystemService
     {
-        bool SaveVideoToFileSystem(byte[] videoBytes, string fileName);
-        FileStream GetFileStreamOfFile(string filename);
+        bool SaveVideoToFileSystem(byte[] videoBytes, string filePath);
+        FileStream GetFileStreamOfFile(string filePath);
+        Task<byte[]?> GetVideoBytesByFile(string filePath);
     }
 }
