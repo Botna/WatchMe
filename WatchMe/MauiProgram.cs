@@ -11,6 +11,7 @@ namespace WatchMe
 {
     public static class MauiProgram
     {
+        public static bool ISEMULATED = false;
         public static MauiApp CreateMauiApp()
         {
             var builder = MauiApp.CreateBuilder();
@@ -35,6 +36,11 @@ namespace WatchMe
             builder.Services.AddTransient<IOrchestrationService, OrchestrationService>();
             builder.Services.AddTransient<ICloudProviderService, CloudProviderService>();
 
+
+            //if (DeviceInfo.Name == "sdk_gphone64_x86_64" && Debugger.IsAttached)
+            //{
+            //    ISEMULATED = true;
+            //}
 
 #if DEBUG
             builder.Logging.AddDebug();
