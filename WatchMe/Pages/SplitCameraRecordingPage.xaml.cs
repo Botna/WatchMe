@@ -74,8 +74,8 @@ public partial class SplitCameraRecordingPage : ContentPage
         var result = await cameraViewFront.StopRecordingAsync();
         result = await cameraViewBack.StopRecordingAsync();
 
-        var backFileTask = _orchestrationService.ProcessSavedFile(backFileName, FileSystem.Current.CacheDirectory);
-        var frontFileTask = _orchestrationService.ProcessSavedFile(frontFileName, FileSystem.Current.CacheDirectory);
+        var backFileTask = _orchestrationService.ProcessSavedVideoFile(backFileName, FileSystem.Current.CacheDirectory);
+        var frontFileTask = _orchestrationService.ProcessSavedVideoFile(frontFileName, FileSystem.Current.CacheDirectory);
 
         await Task.WhenAll(backFileTask, frontFileTask);
     }

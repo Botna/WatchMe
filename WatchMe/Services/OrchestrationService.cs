@@ -5,7 +5,7 @@ namespace WatchMe.Services
 {
     public interface IOrchestrationService
     {
-        Task ProcessSavedFile(string filename, string path);
+        Task ProcessSavedVideoFile(string filename, string path);
     }
 
     public class OrchestrationService : IOrchestrationService
@@ -17,13 +17,13 @@ namespace WatchMe.Services
             _cloudProviderService = cloudProviderService;
             _fileSystemService = fileSystemService;
         }
-        public async Task ProcessSavedFile(string filename, string path)
+        public async Task ProcessSavedVideoFile(string filename, string path)
         {
             var fullFilePath = Path.Combine(path, filename);
             var videoBytes = await _fileSystemService.GetVideoBytesByFile(fullFilePath);
             if (videoBytes == null)
             {
-                return;
+                throw new Exception("Video file couldn't be opened");
             }
             _fileSystemService.SaveVideoToFileSystem(videoBytes, filename);
 
