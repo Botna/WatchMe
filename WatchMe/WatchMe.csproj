@@ -23,7 +23,7 @@
 		<ApplicationTitle>WatchMe</ApplicationTitle>
 
 		<!-- App Identifier -->
-		<ApplicationId>com.companyname.watchme</ApplicationId>
+		<ApplicationId>com.dbstudios.watchme</ApplicationId>
 
 		<!-- Versions -->
 		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>

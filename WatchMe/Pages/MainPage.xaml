@@ -14,12 +14,14 @@
             <Label Text="Welcome. Click to start Watching." />
             <Button
                 Text="Watch Me" 
+                AutomationId="Main_RecordingStartBtn"
                 SemanticProperties.Hint="Activates the Watch Me recording routine"
                 Clicked="OnRecordingPageNav"
                 HorizontalOptions="Fill" />
 
             <Button
                 Text="Settings" 
+                AutomationId="Main_SettingsBtn"
                 SemanticProperties.Hint="Set configurations for WatchMe"
                 Clicked="OnSettingsPageNav"
                 HorizontalOptions="Fill" />

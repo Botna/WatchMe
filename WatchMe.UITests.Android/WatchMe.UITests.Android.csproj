@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Appium.WebDriver" Version="5.0.0-rc.5" />
     <PackageReference Include="coverlet.collector" Version="6.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
     <PackageReference Include="NUnit" Version="3.14.0" />
@@ -18,11 +19,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\WatchMe.UITests.Shared\WatchMe.UITests.Shared.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Using Include="NUnit.Framework" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\WatchMe.UITests.Shared\**\*.cs" LinkBase="Shared" Visible="false" />
   </ItemGroup>
 
 </Project>
