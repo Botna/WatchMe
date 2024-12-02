@@ -37,10 +37,10 @@ namespace WatchMe
             builder.Services.AddTransient<ICloudProviderService, CloudProviderService>();
 
 
-            //if (DeviceInfo.Name == "sdk_gphone64_x86_64" && Debugger.IsAttached)
-            //{
-            //    ISEMULATED = true;
-            //}
+            if (DeviceInfo.Name == "ui_automation_emulator")
+            {
+                ISEMULATED = true;
+            }
 
 #if DEBUG
             builder.Logging.AddDebug();

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -12,6 +12,7 @@
   <ItemGroup>
     <PackageReference Include="Appium.WebDriver" Version="5.0.0-rc.5" />
     <PackageReference Include="coverlet.collector" Version="6.0.0" />
+    <PackageReference Include="FluentAssertions" Version="7.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
     <PackageReference Include="NUnit" Version="3.14.0" />
     <PackageReference Include="NUnit.Analyzers" Version="3.9.0" />
@@ -23,6 +24,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\WatchMe.UITests.Shared\**\*.cs" LinkBase="Shared" Visible="false" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\WatchMe\WatchMe.csproj" />
   </ItemGroup>
 
 </Project>

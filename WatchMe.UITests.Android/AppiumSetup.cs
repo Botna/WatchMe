@@ -42,7 +42,7 @@ public class AppiumSetup
         // https://learn.microsoft.com/xamarin/android/deploy-test/building-apps/build-process#fast-deployment
         androidOptions.AddAdditionalAppiumOption(MobileCapabilityType.NoReset, "true");
         androidOptions.AddAdditionalAppiumOption(AndroidMobileCapabilityType.AppPackage, "com.dbstudios.watchme");
-
+        androidOptions.AddAdditionalAppiumOption("appium:avd", "pixel_5_-_ui_test");
         //Make sure to set [Register("com.companyname.basicappiumsample.MainActivity")] on the MainActivity of your android application
         androidOptions.AddAdditionalAppiumOption(AndroidMobileCapabilityType.AppActivity, $"com.dbstudios.watchme.MainActivity");
         // END DEBUG BUILD SETUP

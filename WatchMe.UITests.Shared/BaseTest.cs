@@ -16,4 +16,9 @@ public abstract class BaseTest
 
         return App.FindElement(MobileBy.Id(id));
     }
+
+    protected AppiumElement FindUIElementByXpath(string xpath)
+    {
+        return App.FindElement(MobileBy.XPath(xpath));
+    }
 }

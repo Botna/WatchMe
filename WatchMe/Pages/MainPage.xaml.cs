@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
+using WatchMe.Config;
 using WatchMe.Pages;
 using WatchMe.Persistance;
 
@@ -35,11 +36,11 @@ namespace WatchMe
             {
                 CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
 
-                string text = "You do not have your connection string configured.";
+
                 ToastDuration duration = ToastDuration.Long;
                 double fontSize = 14;
 
-                var toast = Toast.Make(text, duration, fontSize);
+                var toast = Toast.Make(WatchMeConstants.SETTINGS_CONNECTIONSTRINGNOTFOUND_AZURE, duration, fontSize);
 
                 await toast.Show(cancellationTokenSource.Token);
                 return;

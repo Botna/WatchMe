@@ -1,4 +1,6 @@
-﻿namespace UITests;
+﻿using FluentAssertions;
+using WatchMe.Config;
+namespace UITests;
 
 // This is an example of tests that do not need anything platform specific
 public class MainPageTests : BaseTest
@@ -10,17 +12,28 @@ public class MainPageTests : BaseTest
     }
 
     [Test]
-    public void ClickCounterTest()
+    public void ClickRecord_SettingsNotPresent_ToastsError()
     {
-        // Arrange
-        // Find elements with the value of the AutomationId property
-        var element = FindUIElement("Main_SettingsBtn");
+        var recordingButton = FindUIElement("Main_RecordingStartBtn");
 
         // Act
-        element.Click();
+        recordingButton.Click();
         Task.Delay(500).Wait(); // Wait for the click to register and show up on the screenshot
 
+        var toast = FindUIElementByXpath("/hierarchy/android.widget.Toast");
+
+        var thing = toast.GetAttribute("text");
+        thing.Should().Be(WatchMeConstants.SETTINGS_CONNECTIONSTRINGNOTFOUND_AZURE);
+        //thing.Should
         // Assert
-        App.GetScreenshot().SaveAsFile($"{nameof(ClickCounterTest)}.png");
+        //var webDriver = new WebDriver()
+        //WebDriverWait waitForToast = new WebDriverWait(;
+
+        //waitForToast.Until(ExpectedConditions.presenceOfElementLoacted(By.xpath("/hierarchy/android.widget.Toast")));
+
+        //String toastMessage = driver.findElement((By.xpath("/hierarchy/android.widget.Toast")).getText();
+
+        //System.out.println(toastMessage);
+
     }
 }
