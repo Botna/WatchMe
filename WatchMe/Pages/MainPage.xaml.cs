@@ -40,7 +40,7 @@ namespace WatchMe
                 ToastDuration duration = ToastDuration.Long;
                 double fontSize = 14;
 
-                var toast = Toast.Make(WatchMeConstants.SETTINGS_CONNECTIONSTRINGNOTFOUND_AZURE, duration, fontSize);
+                var toast = Toast.Make(WatchMeConstants.Settings_ConnectionStringNotFound_AzureSC, duration, fontSize);
 
                 await toast.Show(cancellationTokenSource.Token);
                 return;

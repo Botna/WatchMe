@@ -14,7 +14,7 @@ public class MainPageTests : BaseTest
     [Test]
     public void ClickRecord_SettingsNotPresent_ToastsError()
     {
-        var recordingButton = FindUIElement("Main_RecordingStartBtn");
+        var recordingButton = FindUIElement(AutomationConstants.Main_SettingsBtn);
 
         // Act
         recordingButton.Click();
@@ -23,17 +23,6 @@ public class MainPageTests : BaseTest
         var toast = FindUIElementByXpath("/hierarchy/android.widget.Toast");
 
         var thing = toast.GetAttribute("text");
-        thing.Should().Be(WatchMeConstants.SETTINGS_CONNECTIONSTRINGNOTFOUND_AZURE);
-        //thing.Should
-        // Assert
-        //var webDriver = new WebDriver()
-        //WebDriverWait waitForToast = new WebDriverWait(;
-
-        //waitForToast.Until(ExpectedConditions.presenceOfElementLoacted(By.xpath("/hierarchy/android.widget.Toast")));
-
-        //String toastMessage = driver.findElement((By.xpath("/hierarchy/android.widget.Toast")).getText();
-
-        //System.out.println(toastMessage);
-
+        thing.Should().Be(WatchMeConstants.Settings_ConnectionStringNotFound_AzureSC);
     }
 }
