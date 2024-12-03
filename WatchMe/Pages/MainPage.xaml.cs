@@ -1,6 +1,5 @@
-﻿using CommunityToolkit.Maui.Alerts;
-using CommunityToolkit.Maui.Core;
-using WatchMe.Config;
+﻿using WatchMe.Config;
+using WatchMe.Helpers;
 using WatchMe.Pages;
 using WatchMe.Persistance;
 
@@ -32,17 +31,17 @@ namespace WatchMe
         {
             var connectionString = await _cloudProviderService.GetAzureConnectionString();
 
-            if (connectionString == null)
+            if (string.IsNullOrWhiteSpace(connectionString))
             {
-                CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+                await ToastHelper.CreateToast(WatchMeConstants.Settings_ConnectionStringNotFound_AzureSC);
+                //CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
 
+                //ToastDuration duration = ToastDuration.Long;
+                //double fontSize = 14;
 
-                ToastDuration duration = ToastDuration.Long;
-                double fontSize = 14;
+                //var toast = Toast.Make(WatchMeConstants.Settings_ConnectionStringNotFound_AzureSC, duration, fontSize);
 
-                var toast = Toast.Make(WatchMeConstants.Settings_ConnectionStringNotFound_AzureSC, duration, fontSize);
-
-                await toast.Show(cancellationTokenSource.Token);
+                //await toast.Show(cancellationTokenSource.Token);
                 return;
             }
 

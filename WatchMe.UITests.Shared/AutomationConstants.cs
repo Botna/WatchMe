@@ -4,9 +4,10 @@
     {
         //MAIN PAGE
         public const string Main_SettingsBtn = "Main_SettingsBtn";
+        public const string Main_RecordingStartBtn = "Main_RecordingStartBtn";
 
         //SETTINGS PAGE
         public const string Settings_AzureSCConnstry_Entry = "Settings_AzureSCConnstry_Entry";
-        public const string Settigs_SaveButton = "Settings_SaveButton";
+        public const string Settings_SaveButton = "Settings_SaveButton";
     }
 }

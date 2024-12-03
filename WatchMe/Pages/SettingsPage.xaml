@@ -13,7 +13,8 @@
         <Entry x:Name="azure_storage_container_connstr"
             AutomationId="Settings_AzureSCConnstry_Entry"
             Placeholder="Azure Storage Container Connection string..."
-            TextChanged="OnEntryTextChanged"/>
+            TextChanged="OnEntryTextChanged"
+            IsPassword="True"/>
         <Button
     Text="Save" 
     AutomationId="Settings_SaveButton"
