@@ -23,7 +23,7 @@ public partial class SplitCameraRecordingPage : ContentPage
         _orchestrationService = orchestrationService;
     }
 
-    private void CameraViewBack_CamerasLoaded(object sender, EventArgs e)
+    public void CameraViewBack_CamerasLoaded(object sender, EventArgs e)
     {
         camerasLoaded.Add("front");
 
@@ -33,7 +33,7 @@ public partial class SplitCameraRecordingPage : ContentPage
         });
     }
 
-    private void CameraViewFront_CamerasLoaded(object sender, EventArgs e)
+    public void CameraViewFront_CamerasLoaded(object sender, EventArgs e)
     {
         camerasLoaded.Add("back");
         MainThread.BeginInvokeOnMainThread(async () =>
@@ -65,7 +65,6 @@ public partial class SplitCameraRecordingPage : ContentPage
 
     }
 
-    //TODO, will be kicked off via other processes later.
     protected override async void OnNavigatingFrom(NavigatingFromEventArgs e)
     {
         var frontFileName = $"Front_{_videoTimeStampSuffix}.mp4";

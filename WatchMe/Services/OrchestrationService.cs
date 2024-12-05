@@ -28,7 +28,11 @@ namespace WatchMe.Services
             _fileSystemService.SaveVideoToFileSystem(videoBytes, filename);
 
             var videoFileStream = _fileSystemService.GetFileStreamOfFile(fullFilePath);
-            await _cloudProviderService.UploadContentToCloud(videoFileStream, filename);
+
+            if (!MauiProgram.ISEMULATED)
+            {
+                await _cloudProviderService.UploadContentToCloud(videoFileStream, filename);
+            }
         }
     }
 }

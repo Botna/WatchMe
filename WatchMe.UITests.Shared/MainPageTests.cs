@@ -18,7 +18,7 @@ public class MainPageTests : BaseTest
         var settingsButton = FindUIElement(AutomationConstants.Main_SettingsBtn);
 
         settingsButton.Click();
-        Task.Delay(500).Wait(); // Wait for the click to register and show up on the screenshot
+        Task.Delay(500).Wait();
 
         var entry = FindUIElement(AutomationConstants.Settings_AzureSCConnstry_Entry);
         entry.SendKeys("");

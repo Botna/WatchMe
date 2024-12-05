@@ -23,8 +23,6 @@ namespace WatchMe
             _recordingPage = recordingPage;
             _settingsPage = settingsPage;
             _cloudProviderService = cloudProviderService;
-
-
         }
 
         private async void OnRecordingPageNav(object sender, EventArgs e)
@@ -34,14 +32,6 @@ namespace WatchMe
             if (string.IsNullOrWhiteSpace(connectionString))
             {
                 await ToastHelper.CreateToast(WatchMeConstants.Settings_ConnectionStringNotFound_AzureSC);
-                //CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-
-                //ToastDuration duration = ToastDuration.Long;
-                //double fontSize = 14;
-
-                //var toast = Toast.Make(WatchMeConstants.Settings_ConnectionStringNotFound_AzureSC, duration, fontSize);
-
-                //await toast.Show(cancellationTokenSource.Token);
                 return;
             }
 
