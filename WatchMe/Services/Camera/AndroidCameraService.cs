@@ -15,7 +15,7 @@ using static Android.Icu.Text.ListFormatter;
 
 namespace WatchMe.Services.Camera
 {
-    public class AndroidCameraService : BaseCameraService
+    public class AndroidCameraService : ICameraService
     {
 
         public AndroidCameraService() { }
@@ -120,7 +120,15 @@ namespace WatchMe.Services.Camera
 
         }
 
+        public override void TryStartRecording(string filepath)
+        {
+            throw new NotImplementedException();
+        }
 
+        public override void TryStopRecording()
+        {
+            throw new NotImplementedException();
+        }
     }
 
 
