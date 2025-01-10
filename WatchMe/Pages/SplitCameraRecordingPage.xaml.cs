@@ -12,7 +12,7 @@ public partial class SplitCameraRecordingPage : ContentPage
     private readonly IScreenRecording _screenRecorder;
     private readonly ConcurrentBag<string> camerasLoaded = new ConcurrentBag<string>();
     private readonly IOrchestrationService _orchestrationService;
-
+    
     public SplitCameraRecordingPage(IOrchestrationService orchestrationService)
     {
         InitializeComponent();
