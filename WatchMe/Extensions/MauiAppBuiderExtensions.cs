@@ -1,5 +1,7 @@
 ﻿using WatchMe.Persistance.Implementations;
 using WatchMe.Repository;
+using WatchMe.Services;
+using WatchMe.Services.Camera;
 
 namespace WatchMe.Extensions
 {
@@ -10,6 +12,7 @@ namespace WatchMe.Extensions
 
 #if ANDROID
             builder.Services.AddTransient<IFileSystemService, AndroidFileSystemService>();
+            builder.Services.AddTransient<ICameraService, AndroidCameraService>();
 #endif
 
 #if IOS
