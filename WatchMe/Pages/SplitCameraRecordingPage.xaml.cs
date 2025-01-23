@@ -12,8 +12,14 @@ public partial class SplitCameraRecordingPage : ContentPage
     private readonly IScreenRecording _screenRecorder;
     private readonly ConcurrentBag<string> camerasLoaded = new ConcurrentBag<string>();
     private readonly IOrchestrationService _orchestrationService;
+<<<<<<< Updated upstream
     
     public SplitCameraRecordingPage(IOrchestrationService orchestrationService)
+=======
+    private readonly IServiceTest _demoService;
+
+    public SplitCameraRecordingPage(IOrchestrationService orchestrationService, IServiceTest serviceTest)
+>>>>>>> Stashed changes
     {
         InitializeComponent();
         cameraViewBack.CamerasLoaded += CameraViewBack_CamerasLoaded;
@@ -21,6 +27,7 @@ public partial class SplitCameraRecordingPage : ContentPage
         _videoTimeStampSuffix = DateTime.UtcNow.ToString("yyyyMMddHHmmssffff");
 
         _orchestrationService = orchestrationService;
+        _demoService = serviceTest;
     }
 
     public void CameraViewBack_CamerasLoaded(object sender, EventArgs e)
@@ -60,8 +67,10 @@ public partial class SplitCameraRecordingPage : ContentPage
         var backSizes = cameraViewBack.Camera.AvailableResolutions;
         var lastBackSize = backSizes.Last();
 
-        var frontRecordTask = await cameraViewFront.StartRecordingAsync(Path.Combine(FileSystem.Current.CacheDirectory, $"Front_{_videoTimeStampSuffix}.mp4"), lastFrontSize);
-        var backRecordTask = await cameraViewBack.StartRecordingAsync(Path.Combine(FileSystem.Current.CacheDirectory, $"Back_{_videoTimeStampSuffix}.mp4"), lastBackSize);
+
+        _demoService.StartCameras(cameraViewFront, cameraViewBack);
+        //var frontRecordTask = await cameraViewFront.StartRecordingAsync(Path.Combine(FileSystem.Current.CacheDirectory, $"Front_{_videoTimeStampSuffix}.mp4"), lastFrontSize);
+        //var backRecordTask = await cameraViewBack.StartRecordingAsync(Path.Combine(FileSystem.Current.CacheDirectory, $"Back_{_videoTimeStampSuffix}.mp4"), lastBackSize);
 
     }
 

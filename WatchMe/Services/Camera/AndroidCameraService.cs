@@ -56,7 +56,7 @@ namespace WatchMe.Services.Camera
                 try
                 {
                     float[] maxFocus = (float[])chars.Get(CameraCharacteristics.LensInfoAvailableFocalLengths);
-                    var  size = (Android.Util.SizeF)chars.Get(CameraCharacteristics.SensorInfoPhysicalSize);
+                    var size = (Android.Util.SizeF)chars.Get(CameraCharacteristics.SensorInfoPhysicalSize);
                     cameraInfo.HorizontalViewAngle = (float)(2 * System.Math.Atan(size.Width / (maxFocus[0] * 2)));
                     cameraInfo.VerticalViewAngle = (float)(2 * System.Math.Atan(size.Height / (maxFocus[0] * 2)));
                 }
@@ -78,7 +78,7 @@ namespace WatchMe.Services.Camera
                 cameralist.Add(cameraInfo);
             }
 
-            
+
             var fileName = Path.Combine(FileSystem.Current.CacheDirectory, $"someTestVideo.mp4");
             //start recording
             var camChars = cameraManager.GetCameraCharacteristics(cameralist[0].DeviceId);
@@ -119,16 +119,6 @@ namespace WatchMe.Services.Camera
 
 
         }
-
-        public override void TryStartRecording(string filepath)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void TryStopRecording()
-        {
-            throw new NotImplementedException();
-        }
     }
 
 
@@ -164,20 +154,20 @@ namespace WatchMe.Services.Camera
 
     public class CameraInfo
     {
-        public string Name { get;  set; }
+        public string Name { get; set; }
 
-        public string DeviceId { get;  set; }
+        public string DeviceId { get; set; }
 
-        public CameraPosition Position { get;  set; }
+        public CameraPosition Position { get; set; }
 
-        public bool HasFlashUnit { get;  set; }
+        public bool HasFlashUnit { get; set; }
 
-        public float MinZoomFactor { get;  set; }
+        public float MinZoomFactor { get; set; }
 
-        public float MaxZoomFactor { get;  set; }
-        public float HorizontalViewAngle { get;  set; }
+        public float MaxZoomFactor { get; set; }
+        public float HorizontalViewAngle { get; set; }
 
-        public float VerticalViewAngle { get;  set; }
+        public float VerticalViewAngle { get; set; }
 
         public List<Size> AvailableResolutions { get; internal set; }
 
