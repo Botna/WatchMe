@@ -2,7 +2,7 @@
 {
     public interface ICameraService
     {
-        public void TryStartRecording(string filepath);
+        public void TryStartRecording(string filename);
         public void TryStopRecording();
     }
 }

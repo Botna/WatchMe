@@ -2,11 +2,12 @@
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
-using Android.Hardware.Camera2;
-using Android.Media;
 using Android.OS;
 using Android.Runtime;
 using Camera.MAUI;
+using WatchMe.Persistance;
+using WatchMe.Persistance.Implementations;
+using WatchMe.Services.Camera;
 
 namespace WatchMe.Services
 {
@@ -14,8 +15,14 @@ namespace WatchMe.Services
     [Service(ForegroundServiceType = ForegroundService.TypeDataSync)]
     public class DemoService : Service, IServiceTest
     {
-        public CameraView _frontCameraView = null;
-        public CameraView _backCameraView = null;
+        private string CurrentFileName;
+        private ICameraService _cameraService;
+
+        public DemoService()
+        {
+
+        }
+
         public override IBinder OnBind(Intent intent)
         {
             throw new NotImplementedException();
@@ -34,6 +41,7 @@ namespace WatchMe.Services
             }
             else if (intent.Action == "STOP_SERVICE")
             {
+                Task.Run(() => StopCameraRecording());
                 StopForeground(true);//Stop the service
                 StopSelfResult(startId);
             }
@@ -42,21 +50,33 @@ namespace WatchMe.Services
         }
 
 
-        public async Task StartCameraRecording()
+        public void StartCameraRecording()
         {
-            var context = Android.App.Application.Context;
-            var cameraManager = (CameraManager)context.GetSystemService(Context.CameraService);
-            var audioManager = (AudioManager)context.GetSystemService(Context.AudioService);
+            if (_cameraService == null)
+            {
+                _cameraService = new AndroidCameraService();
+            }
+
+            var time = DateTime.Now.ToString();
+            CurrentFileName = DateTime.UtcNow.ToString("yyyyMMddHHmmssffff") + "_backgroundservice.mp4";
+            _cameraService.TryStartRecording(CurrentFileName);
+        }
+
+        public async Task StopCameraRecording()
+        {
+            _cameraService.TryStopRecording();
+
+            var orchestrationService = new OrchestrationService(new CloudProviderService(), new AndroidFileSystemService());
+            await orchestrationService.ProcessSavedVideoFile(CurrentFileName, FileSystem.Current.CacheDirectory);
+            //dispatch the file transfer
         }
 
 
         //Start and Stop Intents, set the actions for the MainActivity to get the state of the foreground service
         //Setting one action to start and one action to stop the foreground service
 
-        public void StartCameras(CameraView frontCamera, CameraView backCamera)
+        public void StartCameras()
         {
-            _frontCameraView = frontCamera;
-            _backCameraView = backCamera;
             Intent startService = new Intent(MainActivity.ActivityCurrent, typeof(DemoService));
             startService.SetAction("START_SERVICE");
             MainActivity.ActivityCurrent.StartService(startService);

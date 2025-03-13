@@ -1,29 +1,19 @@
 ﻿#if ANDROID
-using Android.Content;
 using Android.Hardware.Camera2;
 using Android.Hardware.Camera2.Params;
-using Android.Hardware.Lights;
 using Android.Media;
 using Camera.MAUI;
 using Java.Lang;
 using Java.Util.Concurrent;
-using static Android.Icu.Text.ListFormatter;
-
-
-
-
 
 namespace WatchMe.Services.Camera
 {
     public class AndroidCameraService : ICameraService
     {
-
-        public AndroidCameraService() { }
         public MediaRecorder mediaRecorder;
 
-        public void TryStartCamera()
+        public void TryStartRecording(string filename)
         {
-
 
             //init
             var context = MauiApplication.Context;
@@ -79,10 +69,11 @@ namespace WatchMe.Services.Camera
             }
 
 
-            var fileName = Path.Combine(FileSystem.Current.CacheDirectory, $"someTestVideo.mp4");
+            var fileName = Path.Combine(FileSystem.Current.CacheDirectory, filename);
             //start recording
             var camChars = cameraManager.GetCameraCharacteristics(cameralist[0].DeviceId);
             StreamConfigurationMap map = (StreamConfigurationMap)camChars.Get(CameraCharacteristics.ScalerStreamConfigurationMap);
+
 
             //this is background task, just do max??
             //var videoSize = ChooseVideoSize(map.GetOutputSizes(Class.FromType(typeof(ImageReader))));
@@ -92,37 +83,41 @@ namespace WatchMe.Services.Camera
                 mediaRecorder = new MediaRecorder(context);
             else
                 mediaRecorder = new MediaRecorder();
-            var resolution = cameralist[0].AvailableResolutions.Last();
-            mediaRecorder.SetAudioSource(AudioSource.Mic);
+            var resolution = cameralist[1].AvailableResolutions.First();
+            //mediaRecorder.SetAudioSource(AudioSource.Mic);
             mediaRecorder.SetVideoSource(VideoSource.Surface);
-            mediaRecorder.SetOutputFormat(OutputFormat.Mpeg4);
+            mediaRecorder.SetOutputFormat(OutputFormat.Default);
             mediaRecorder.SetOutputFile(fileName);
             mediaRecorder.SetVideoEncodingBitRate(10000000);
             mediaRecorder.SetVideoFrameRate(30);
             mediaRecorder.SetVideoSize((int)resolution.Width, (int)resolution.Height);
             mediaRecorder.SetVideoEncoder(VideoEncoder.H264);
-            mediaRecorder.SetAudioEncoder(AudioEncoder.Aac);
+            //mediaRecorder.SetAudioEncoder(AudioEncoder.Aac);
 
             mediaRecorder.Prepare();
+
+
+            var executorService = Executors.NewSingleThreadExecutor();
+            var stateListener = new MyCameraStateCallback();
+            if (OperatingSystem.IsAndroidVersionAtLeast(28))
+                cameraManager.OpenCamera(cameralist[1].DeviceId, executorService, stateListener);
+            else
+                cameraManager.OpenCamera(cameralist[1].DeviceId, stateListener, null);
             mediaRecorder.Start();
         }
 
-        public void TryStopCamera()
+        public void TryStopRecording()
         {
             mediaRecorder?.Stop();
             mediaRecorder?.Dispose();
 
-            var fileName = Path.Combine(FileSystem.Current.CacheDirectory, $"someTestVideo.mp4");
-
-            var FS = new FileStream(fileName, FileMode.Open);
-            //var videoBytes = await _fileSystemService.GetVideoBytesByFile(fullFilePath);
-
-
+            //
         }
     }
 
-
-
+    internal class CameraX
+    {
+    }
 
     public class MyCameraStateCallback : CameraDevice.StateCallback
     {

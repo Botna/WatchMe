@@ -2,7 +2,7 @@ using Camera.MAUI;
 using Plugin.Maui.ScreenRecording;
 using System.Collections.Concurrent;
 using WatchMe.Services;
-
+using WatchMe.Services.Camera;
 
 namespace WatchMe;
 
@@ -12,14 +12,13 @@ public partial class SplitCameraRecordingPage : ContentPage
     private readonly IScreenRecording _screenRecorder;
     private readonly ConcurrentBag<string> camerasLoaded = new ConcurrentBag<string>();
     private readonly IOrchestrationService _orchestrationService;
-<<<<<<< Updated upstream
-    
-    public SplitCameraRecordingPage(IOrchestrationService orchestrationService)
-=======
-    private readonly IServiceTest _demoService;
 
-    public SplitCameraRecordingPage(IOrchestrationService orchestrationService, IServiceTest serviceTest)
->>>>>>> Stashed changes
+    private readonly IServiceTest _demoService;
+    private readonly ICameraService _cameraService;
+
+
+
+    public SplitCameraRecordingPage(IOrchestrationService orchestrationService, IServiceTest serviceTest, ICameraService cameraService)
     {
         InitializeComponent();
         cameraViewBack.CamerasLoaded += CameraViewBack_CamerasLoaded;
@@ -28,6 +27,9 @@ public partial class SplitCameraRecordingPage : ContentPage
 
         _orchestrationService = orchestrationService;
         _demoService = serviceTest;
+
+        _cameraService = cameraService;
+
     }
 
     public void CameraViewBack_CamerasLoaded(object sender, EventArgs e)
@@ -51,12 +53,19 @@ public partial class SplitCameraRecordingPage : ContentPage
 
     private async Task StartRecordingWhenBothCamerasLoaded()
     {
+
+
         var frontCamera = cameraViewFront.Cameras.FirstOrDefault(x => x.Position == CameraPosition.Front);
         var backCamera = cameraViewBack.Cameras.FirstOrDefault(x => x.Position == CameraPosition.Back);
         if (camerasLoaded.Count() == 1)
         {
             return;
         }
+
+        //_cameraService.TryStartRecording(_videoTimeStampSuffix + "-mainact");
+        //_demoService.StartCameras();
+
+
 
         cameraViewFront.Camera = frontCamera;
         cameraViewBack.Camera = backCamera;
@@ -68,23 +77,29 @@ public partial class SplitCameraRecordingPage : ContentPage
         var lastBackSize = backSizes.Last();
 
 
-        _demoService.StartCameras(cameraViewFront, cameraViewBack);
-        //var frontRecordTask = await cameraViewFront.StartRecordingAsync(Path.Combine(FileSystem.Current.CacheDirectory, $"Front_{_videoTimeStampSuffix}.mp4"), lastFrontSize);
-        //var backRecordTask = await cameraViewBack.StartRecordingAsync(Path.Combine(FileSystem.Current.CacheDirectory, $"Back_{_videoTimeStampSuffix}.mp4"), lastBackSize);
+
+        var frontRecordTask = await cameraViewFront.StartRecordingAsync(Path.Combine(FileSystem.Current.CacheDirectory, $"Front_{_videoTimeStampSuffix}.mp4"), lastFrontSize);
+        var backRecordTask = await cameraViewBack.StartRecordingAsync(Path.Combine(FileSystem.Current.CacheDirectory, $"Back_{_videoTimeStampSuffix}.mp4"), lastBackSize);
 
     }
 
     protected override async void OnNavigatingFrom(NavigatingFromEventArgs e)
     {
+        //_cameraService.TryStopRecording();
+
+        //await _orchestrationService.ProcessSavedVideoFile(_videoTimeStampSuffix + "-mainact", FileSystem.Current.CacheDirectory);
+        //_demoService.StopCameras();
+
         var frontFileName = $"Front_{_videoTimeStampSuffix}.mp4";
-        var backFileName = $"Back_{_videoTimeStampSuffix}.mp4";
+        //var backFileName = $"Back_{_videoTimeStampSuffix}.mp4";
 
         var result = await cameraViewFront.StopRecordingAsync();
-        result = await cameraViewBack.StopRecordingAsync();
+        //result = await cameraViewBack.StopRecordingAsync();
 
-        var backFileTask = _orchestrationService.ProcessSavedVideoFile(backFileName, FileSystem.Current.CacheDirectory);
+        //var backFileTask = _orchestrationService.ProcessSavedVideoFile(backFileName, FileSystem.Current.CacheDirectory);
         var frontFileTask = _orchestrationService.ProcessSavedVideoFile(frontFileName, FileSystem.Current.CacheDirectory);
 
-        await Task.WhenAll(backFileTask, frontFileTask);
+        //await Task.WhenAll(backFileTask, frontFileTask);
+        await Task.WhenAll(frontFileTask);
     }
 }
