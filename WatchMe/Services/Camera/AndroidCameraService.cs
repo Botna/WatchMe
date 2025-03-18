@@ -1,7 +1,9 @@
 ﻿#if ANDROID
+using Android.Graphics;
 using Android.Hardware.Camera2;
 using Android.Hardware.Camera2.Params;
 using Android.Media;
+using Android.Views;
 using Camera.MAUI;
 using Java.Lang;
 using Java.Util.Concurrent;
@@ -11,15 +13,16 @@ namespace WatchMe.Services.Camera
     public class AndroidCameraService : ICameraService
     {
         public MediaRecorder mediaRecorder;
-
+        public CameraDevice cameraDevice;
+        private CaptureRequest.Builder previewBuilder;
+        private PreviewCaptureStateCallback sessionCallback;
+        private IExecutorService executorService;
         public void TryStartRecording(string filename)
         {
-
             //init
             var context = MauiApplication.Context;
             var cameraManager = (CameraManager)context.GetSystemService("camera");
             var cameralist = new List<CameraInfo>();
-            //init shit?
             foreach (var id in cameraManager.GetCameraIdList())
             {
                 var cameraInfo = new CameraInfo { DeviceId = id, MinZoomFactor = 1 };
@@ -69,7 +72,7 @@ namespace WatchMe.Services.Camera
             }
 
 
-            var fileName = Path.Combine(FileSystem.Current.CacheDirectory, filename);
+            var fileName = System.IO.Path.Combine(FileSystem.Current.CacheDirectory, filename);
             //start recording
             var camChars = cameraManager.GetCameraCharacteristics(cameralist[0].DeviceId);
             StreamConfigurationMap map = (StreamConfigurationMap)camChars.Get(CameraCharacteristics.ScalerStreamConfigurationMap);
@@ -77,7 +80,7 @@ namespace WatchMe.Services.Camera
 
             //this is background task, just do max??
             //var videoSize = ChooseVideoSize(map.GetOutputSizes(Class.FromType(typeof(ImageReader))));
-            MediaRecorder mediaRecorder = null;
+            mediaRecorder = null;
 
             if (OperatingSystem.IsAndroidVersionAtLeast(31))
                 mediaRecorder = new MediaRecorder(context);
@@ -97,8 +100,8 @@ namespace WatchMe.Services.Camera
             mediaRecorder.Prepare();
 
 
-            var executorService = Executors.NewSingleThreadExecutor();
-            var stateListener = new MyCameraStateCallback();
+            executorService = Executors.NewSingleThreadExecutor();
+            var stateListener = new MyCameraStateCallback(this);
             if (OperatingSystem.IsAndroidVersionAtLeast(28))
                 cameraManager.OpenCamera(cameralist[1].DeviceId, executorService, stateListener);
             else
@@ -111,27 +114,74 @@ namespace WatchMe.Services.Camera
             mediaRecorder?.Stop();
             mediaRecorder?.Dispose();
 
-            //
+
         }
+
+        public void StartCapture()
+        {
+            SurfaceTexture texture = new SurfaceTexture(10);
+            texture.SetDefaultBufferSize(3264, 2448);
+            previewBuilder = cameraDevice.CreateCaptureRequest(CameraTemplate.Record);
+
+            var surfaces = new List<OutputConfiguration>();
+            var previewSurface = new Surface(texture);
+            surfaces.Add(new OutputConfiguration(previewSurface));
+            if (mediaRecorder != null)
+            {
+                surfaces.Add(new OutputConfiguration(mediaRecorder.Surface));
+                //surfaces26.Add(mediaRecorder.Surface);
+                previewBuilder.AddTarget(mediaRecorder.Surface);
+            }
+            sessionCallback = new PreviewCaptureStateCallback(this);
+            if (OperatingSystem.IsAndroidVersionAtLeast(28))
+            {
+                SessionConfiguration config = new((int)SessionType.Regular, surfaces, executorService, sessionCallback);
+                cameraDevice.CreateCaptureSession(config);
+            }
+        }
+
+        public void UpdatePreview()
+        {
+            mediaRecorder?.Start();
+        }
+
+        internal void SetZoomFactor(float zoom)
+        {
+            //if (previewSession != null && previewBuilder != null && cameraView.Camera != null)
+            //{
+            //    //if (OperatingSystem.IsAndroidVersionAtLeast(30))
+            //    //{
+            //    //previewBuilder.Set(CaptureRequest.ControlZoomRatio, Math.Max(Camera.MinZoomFactor, Math.Min(zoom, Camera.MaxZoomFactor)));
+            //    //}
+            //    var destZoom = System.Math.Clamp(zoom, 1, System.Math.Min(6, cameraView.Camera.MaxZoomFactor)) - 1;
+            //    Android.Graphics.Rect m = (Rect)camChars.Get(CameraCharacteristics.SensorInfoActiveArraySize);
+            //    int minW = (int)(m.Width() / (cameraView.Camera.MaxZoomFactor));
+            //    int minH = (int)(m.Height() / (cameraView.Camera.MaxZoomFactor));
+            //    int newWidth = (int)(m.Width() - (minW * destZoom));
+            //    int newHeight = (int)(m.Height() - (minH * destZoom));
+            //    Rect zoomArea = new((m.Width() - newWidth) / 2, (m.Height() - newHeight) / 2, newWidth, newHeight);
+            //    previewBuilder.Set(CaptureRequest.ScalerCropRegion, zoomArea);
+            //    previewSession.SetRepeatingRequest(previewBuilder.Build(), null, null);
+            //}
+        }
+
     }
 
-    internal class CameraX
-    {
-    }
 
     public class MyCameraStateCallback : CameraDevice.StateCallback
     {
-        public MyCameraStateCallback()
+        private readonly AndroidCameraService _cameraService;
+        public MyCameraStateCallback(AndroidCameraService cameraService)
         {
-
+            _cameraService = cameraService;
         }
         public override void OnOpened(CameraDevice camera)
         {
-            //if (camera != null)
-            //{
-            //    cameraView.cameraDevice = camera;
-            //    cameraView.StartPreview();
-            //}
+            if (camera != null)
+            {
+                _cameraService.cameraDevice = camera;
+                _cameraService.StartCapture();
+            }
         }
 
         public override void OnDisconnected(CameraDevice camera)
@@ -144,6 +194,24 @@ namespace WatchMe.Services.Camera
         {
             camera?.Close();
             //cameraView.cameraDevice = null;
+        }
+    }
+
+    public class PreviewCaptureStateCallback : CameraCaptureSession.StateCallback
+    {
+        private readonly AndroidCameraService _cameraService;
+        public PreviewCaptureStateCallback(AndroidCameraService cameraService)
+        {
+            _cameraService = cameraService;
+        }
+        public override void OnConfigured(CameraCaptureSession session)
+        {
+            //cameraView.previewSession = session;
+            _cameraService.UpdatePreview();
+
+        }
+        public override void OnConfigureFailed(CameraCaptureSession session)
+        {
         }
     }
 

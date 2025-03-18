@@ -65,8 +65,6 @@ public partial class SplitCameraRecordingPage : ContentPage
         //_cameraService.TryStartRecording(_videoTimeStampSuffix + "-mainact");
         //_demoService.StartCameras();
 
-
-
         cameraViewFront.Camera = frontCamera;
         cameraViewBack.Camera = backCamera;
 
@@ -76,10 +74,8 @@ public partial class SplitCameraRecordingPage : ContentPage
         var backSizes = cameraViewBack.Camera.AvailableResolutions;
         var lastBackSize = backSizes.Last();
 
-
-
         var frontRecordTask = await cameraViewFront.StartRecordingAsync(Path.Combine(FileSystem.Current.CacheDirectory, $"Front_{_videoTimeStampSuffix}.mp4"), lastFrontSize);
-        var backRecordTask = await cameraViewBack.StartRecordingAsync(Path.Combine(FileSystem.Current.CacheDirectory, $"Back_{_videoTimeStampSuffix}.mp4"), lastBackSize);
+        //var backRecordTask = await cameraViewBack.StartRecordingAsync(Path.Combine(FileSystem.Current.CacheDirectory, $"Back_{_videoTimeStampSuffix}.mp4"), lastBackSize);
 
     }
 
