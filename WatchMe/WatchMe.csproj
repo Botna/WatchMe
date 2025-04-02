@@ -66,7 +66,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\..\Camera.MAUI\Camera.MAUI\Camera.MAUI.csproj" />
+	  <ProjectReference Include="..\..\Botna.Camera.MAUI\Camera.MAUI\Camera.MAUI.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
