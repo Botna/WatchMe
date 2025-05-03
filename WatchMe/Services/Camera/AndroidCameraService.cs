@@ -1,12 +1,16 @@
 ﻿#if ANDROID
+using Android.Content;
 using Android.Graphics;
 using Android.Hardware.Camera2;
 using Android.Hardware.Camera2.Params;
+using Android.Hardware.Lights;
 using Android.Media;
+using Android.Renderscripts;
 using Android.Views;
 using Camera.MAUI;
 using Java.Lang;
 using Java.Util.Concurrent;
+using static Android.Icu.Text.ListFormatter;
 
 namespace WatchMe.Services.Camera
 {
@@ -17,6 +21,7 @@ namespace WatchMe.Services.Camera
         private CaptureRequest.Builder previewBuilder;
         private PreviewCaptureStateCallback sessionCallback;
         private IExecutorService executorService;
+        public CameraCaptureSession previewSession;
         public void TryStartRecording(string filename)
         {
             //init
@@ -87,7 +92,7 @@ namespace WatchMe.Services.Camera
             else
                 mediaRecorder = new MediaRecorder();
             var resolution = cameralist[1].AvailableResolutions.First();
-            //mediaRecorder.SetAudioSource(AudioSource.Mic);
+            mediaRecorder.SetAudioSource(AudioSource.Mic);
             mediaRecorder.SetVideoSource(VideoSource.Surface);
             mediaRecorder.SetOutputFormat(OutputFormat.Default);
             mediaRecorder.SetOutputFile(fileName);
@@ -95,7 +100,7 @@ namespace WatchMe.Services.Camera
             mediaRecorder.SetVideoFrameRate(30);
             mediaRecorder.SetVideoSize((int)resolution.Width, (int)resolution.Height);
             mediaRecorder.SetVideoEncoder(VideoEncoder.H264);
-            //mediaRecorder.SetAudioEncoder(AudioEncoder.Aac);
+            mediaRecorder.SetAudioEncoder(AudioEncoder.Aac);
 
             mediaRecorder.Prepare();
 
@@ -142,11 +147,20 @@ namespace WatchMe.Services.Camera
 
         public void UpdatePreview()
         {
+            SetZoomFactor();
+            SetAspectRatio();
+
+            //AudioManager audioManger = context
+
+
             mediaRecorder?.Start();
         }
 
-        internal void SetZoomFactor(float zoom)
+        internal void SetZoomFactor()
         {
+            Android.Graphics.Rect zoomArea = new Android.Graphics.Rect(0, 0, 1920, 1440); //Default for pixel pro 9
+            previewBuilder.Set(CaptureRequest.ScalerCropRegion, zoomArea);
+            previewSession.SetRepeatingRequest(previewBuilder.Build(), null, null);
             //if (previewSession != null && previewBuilder != null && cameraView.Camera != null)
             //{
             //    //if (OperatingSystem.IsAndroidVersionAtLeast(30))
@@ -164,7 +178,35 @@ namespace WatchMe.Services.Camera
             //    previewSession.SetRepeatingRequest(previewBuilder.Build(), null, null);
             //}
         }
+        internal void SetAspectRatio()
+        {
+            //not needed for POC.
+            //Matrix txform = new();
 
+            //RectF viewRect = new(0, 0, Width, Height);
+            //float centerX = viewRect.CenterX();
+            //float centerY = viewRect.CenterY();
+            //RectF bufferRect = new(0, 0, videoHeight, videoWidth);
+            //bufferRect.Offset(centerX - bufferRect.CenterX(), centerY - bufferRect.CenterY());
+            //txform.SetRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.Fill);
+            //float scale = Math.Max(
+            //        (float)Height / videoHeight,
+            //        (float)Width / videoWidth);
+            //txform.PostScale(scale, scale, centerX, centerY);
+
+            ////txform.PostScale(scaleX, scaleY, centerX, centerY);
+            //IWindowManager windowManager = context.GetSystemService(Context.WindowService).JavaCast<IWindowManager>();
+            //var rotation = windowManager.DefaultDisplay.Rotation;
+            //if (SurfaceOrientation.Rotation90 == rotation || SurfaceOrientation.Rotation270 == rotation)
+            //{
+            //    txform.PostRotate(90 * ((int)rotation - 2), centerX, centerY);
+            //}
+            //else if (SurfaceOrientation.Rotation180 == rotation)
+            //{
+            //    txform.PostRotate(180, centerX, centerY);
+            //}
+            //textureView.SetTransform(txform);
+        }
     }
 
 
@@ -206,7 +248,7 @@ namespace WatchMe.Services.Camera
         }
         public override void OnConfigured(CameraCaptureSession session)
         {
-            //cameraView.previewSession = session;
+            _cameraService.previewSession = session;
             _cameraService.UpdatePreview();
 
         }

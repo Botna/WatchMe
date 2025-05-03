@@ -62,7 +62,7 @@ public partial class SplitCameraRecordingPage : ContentPage
             return;
         }
 
-        //_cameraService.TryStartRecording(_videoTimeStampSuffix + "-mainact");
+        _cameraService.TryStartRecording(_videoTimeStampSuffix + "-mainact");
         //_demoService.StartCameras();
 
         cameraViewFront.Camera = frontCamera;
