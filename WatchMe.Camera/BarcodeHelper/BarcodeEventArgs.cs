@@ -1,4 +1,4 @@
-﻿namespace Camera.MAUI.ZXingHelper;
+﻿namespace WatchMe.Camera.ZXingHelper;
 
 public record BarcodeEventArgs
 {

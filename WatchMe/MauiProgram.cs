@@ -1,7 +1,7 @@
-﻿using Camera.MAUI;
-using CommunityToolkit.Maui;
+﻿using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
 using Plugin.Maui.ScreenRecording;
+using WatchMe.Camera;
 using WatchMe.Extensions;
 using WatchMe.Pages;
 using WatchMe.Persistance;

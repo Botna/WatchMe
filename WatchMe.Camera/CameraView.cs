@@ -1,5 +1,6 @@
-﻿using Camera.MAUI.ZXingHelper;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
+using WatchMe.Camera.ZXingHelper;
+
 
 #if IOS || MACCATALYST
 using DecodeDataType = UIKit.UIImage;
@@ -11,7 +12,7 @@ using DecodeDataType = Windows.Graphics.Imaging.SoftwareBitmap;
 using DecodeDataType = System.Object;
 #endif
 
-namespace Camera.MAUI;
+namespace WatchMe.Camera;
 
 public class CameraView : View, ICameraView
 {
@@ -20,23 +21,12 @@ public class CameraView : View, ICameraView
     public static readonly BindableProperty TorchEnabledProperty = BindableProperty.Create(nameof(TorchEnabled), typeof(bool), typeof(CameraView), false);
     public static readonly BindableProperty CamerasProperty = BindableProperty.Create(nameof(Cameras), typeof(ObservableCollection<CameraInfo>), typeof(CameraView), new ObservableCollection<CameraInfo>());
     public static readonly BindableProperty NumCamerasDetectedProperty = BindableProperty.Create(nameof(NumCamerasDetected), typeof(int), typeof(CameraView), 0);
-    public static readonly BindableProperty CameraProperty = BindableProperty.Create(nameof(Camera), typeof(CameraInfo), typeof(CameraView), null, propertyChanged:CameraChanged);
+    public static readonly BindableProperty CameraProperty = BindableProperty.Create(nameof(Camera), typeof(CameraInfo), typeof(CameraView), null, propertyChanged: CameraChanged);
     public static readonly BindableProperty MicrophonesProperty = BindableProperty.Create(nameof(Microphones), typeof(ObservableCollection<MicrophoneInfo>), typeof(CameraView), new ObservableCollection<MicrophoneInfo>());
     public static readonly BindableProperty NumMicrophonesDetectedProperty = BindableProperty.Create(nameof(NumMicrophonesDetected), typeof(int), typeof(CameraView), 0);
     public static readonly BindableProperty MicrophoneProperty = BindableProperty.Create(nameof(Microphone), typeof(MicrophoneInfo), typeof(CameraView), null);
     public static readonly BindableProperty MirroredImageProperty = BindableProperty.Create(nameof(MirroredImage), typeof(bool), typeof(CameraView), false);
-    public static readonly BindableProperty BarCodeDecoderProperty = BindableProperty.Create(nameof(BarCodeDecoder), typeof(IBarcodeDecoder), typeof(CameraView), null);
-    public static readonly BindableProperty BarCodeDetectionEnabledProperty = BindableProperty.Create(nameof(BarCodeDetectionEnabled), typeof(bool), typeof(CameraView), false);
-    public static readonly BindableProperty BarCodeDetectionFrameRateProperty = BindableProperty.Create(nameof(BarCodeDetectionFrameRate), typeof(int), typeof(CameraView), 10);
-    public static readonly BindableProperty BarCodeOptionsProperty = BindableProperty.Create(nameof(BarCodeOptions), typeof(BarcodeDecodeOptions), typeof(CameraView), new BarcodeDecodeOptions(), propertyChanged:BarCodeOptionsChanged);
-    public static readonly BindableProperty BarCodeResultsProperty = BindableProperty.Create(nameof(BarCodeResults), typeof(BarcodeResult[]), typeof(CameraView), null, BindingMode.OneWayToSource);
     public static readonly BindableProperty ZoomFactorProperty = BindableProperty.Create(nameof(ZoomFactor), typeof(float), typeof(CameraView), 1f);
-    public static readonly BindableProperty AutoSnapShotSecondsProperty = BindableProperty.Create(nameof(AutoSnapShotSeconds), typeof(float), typeof(CameraView), 0f);
-    public static readonly BindableProperty AutoSnapShotFormatProperty = BindableProperty.Create(nameof(AutoSnapShotFormat), typeof(ImageFormat), typeof(CameraView), ImageFormat.PNG);
-    public static readonly BindableProperty SnapShotProperty = BindableProperty.Create(nameof(SnapShot), typeof(ImageSource), typeof(CameraView), null, BindingMode.OneWayToSource);
-    public static readonly BindableProperty SnapShotStreamProperty = BindableProperty.Create(nameof(SnapShotStream), typeof(Stream), typeof(CameraView), null, BindingMode.OneWayToSource);
-    public static readonly BindableProperty TakeAutoSnapShotProperty = BindableProperty.Create(nameof(TakeAutoSnapShot), typeof(bool), typeof(CameraView), false, propertyChanged:TakeAutoSnapShotChanged);
-    public static readonly BindableProperty AutoSnapShotAsImageSourceProperty = BindableProperty.Create(nameof(AutoSnapShotAsImageSource), typeof(bool), typeof(CameraView), false);
     public static readonly BindableProperty AutoStartPreviewProperty = BindableProperty.Create(nameof(AutoStartPreview), typeof(bool), typeof(CameraView), false, propertyChanged: AutoStartPreviewChanged);
     public static readonly BindableProperty AutoRecordingFileProperty = BindableProperty.Create(nameof(AutoRecordingFile), typeof(string), typeof(CameraView), string.Empty);
     public static readonly BindableProperty AutoStartRecordingProperty = BindableProperty.Create(nameof(AutoStartRecording), typeof(bool), typeof(CameraView), false, propertyChanged: AutoStartRecordingChanged);
@@ -121,52 +111,7 @@ public class CameraView : View, ICameraView
         get { return (bool)GetValue(MirroredImageProperty); }
         set { SetValue(MirroredImageProperty, value); }
     }
-    /// <summary>
-    /// Set the barcode Decoder to be used.
-    /// </summary>
-    public IBarcodeDecoder BarCodeDecoder
-    {
-        get { return (IBarcodeDecoder)GetValue(BarCodeDecoderProperty); }
-        set { SetValue(BarCodeDecoderProperty, value); }
-    }
-    /// <summary>
-    /// Turns on and off the barcode detection, BarCodeDecoder must be set. This is a bindable property.
-    /// </summary>
-    public bool BarCodeDetectionEnabled
-    {
-        get { return (bool)GetValue(BarCodeDetectionEnabledProperty); }
-        set { SetValue(BarCodeDetectionEnabledProperty, value); }
-    }
-    /// <summary>
-    /// Indicates every how many frames the control tries to detect a barcode in the image. This is a bindable property.
-    /// </summary>
-    public int BarCodeDetectionFrameRate
-    {
-        get { return (int)GetValue(BarCodeDetectionFrameRateProperty); }
-        set { SetValue(BarCodeDetectionFrameRateProperty, value); }
-    }
-    /// <summary>
-    /// Indicates the maximun number of simultaneous running threads for barcode detection
-    /// </summary>
-    public int BarCodeDetectionMaxThreads { get; set; } = 3;
-    internal int currentThreads = 0;
-    internal object currentThreadsLocker = new();
-    /// <summary>
-    /// Options for the barcode detection. This is a bindable property.
-    /// </summary>
-    public BarcodeDecodeOptions BarCodeOptions
-    {
-        get { return (BarcodeDecodeOptions)GetValue(BarCodeOptionsProperty); }
-        set { SetValue(BarCodeOptionsProperty, value); }
-    }
-    /// <summary>
-    /// It refresh each time a barcode is detected if BarCodeDetectionEnabled porperty is true and BarCodeDecoder is set
-    /// </summary>
-    public BarcodeResult[] BarCodeResults
-    {
-        get { return (BarcodeResult[])GetValue(BarCodeResultsProperty); }
-        set { SetValue(BarCodeResultsProperty, value); }
-    }
+
     /// <summary>
     /// The zoom factor for the current camera in use. This is a bindable property.
     /// </summary>
@@ -201,58 +146,7 @@ public class CameraView : View, ICameraView
                 return 1f;
         }
     }
-    /// <summary>
-    /// Sets how often the SnapShot property is updated in seconds.
-    /// Default 0: no snapshots are taken
-    /// WARNING! A low frequency directly impacts over control performance and memory usage (with AutoSnapShotAsImageSource = true)
-    /// </summary>
-    public float AutoSnapShotSeconds
-    {
-        get { return (float)GetValue(AutoSnapShotSecondsProperty); }
-        set { SetValue(AutoSnapShotSecondsProperty, value); }
-    }
-    /// <summary>
-    /// Sets the snaphost image format
-    /// </summary>
-    public ImageFormat AutoSnapShotFormat
-    {
-        get { return (ImageFormat)GetValue(AutoSnapShotFormatProperty); }
-        set { SetValue(AutoSnapShotFormatProperty, value); }
-    }
-    /// <summary>
-    /// Refreshes according to the frequency set in the AutoSnapShotSeconds property (if AutoSnapShotAsImageSource is set to true)
-    /// or when GetSnapShot is called or TakeAutoSnapShot is set to true
-    /// </summary>
-    public ImageSource SnapShot
-    {
-        get { return (ImageSource)GetValue(SnapShotProperty); }
-        private set { SetValue(SnapShotProperty, value); }
-    }
-    /// <summary>
-    /// Refreshes according to the frequency set in the AutoSnapShotSeconds property or when GetSnapShot is called.
-    /// WARNING. Each time a snapshot is made, the previous stream is disposed.
-    /// </summary>
-    public Stream SnapShotStream
-    {
-        get { return (Stream)GetValue(SnapShotStreamProperty); }
-        internal set { SetValue(SnapShotStreamProperty, value); }
-    }
-    /// <summary>
-    /// Change from false to true refresh SnapShot property
-    /// </summary>
-    public bool TakeAutoSnapShot
-    {
-        get { return (bool)GetValue(TakeAutoSnapShotProperty); }
-        set { SetValue(TakeAutoSnapShotProperty, value); }
-    }
-    /// <summary>
-    /// If true SnapShot property is refreshed according to the frequency set in the AutoSnapShotSeconds property
-    /// </summary>
-    public bool AutoSnapShotAsImageSource
-    {
-        get { return (bool)GetValue(AutoSnapShotAsImageSourceProperty); }
-        set { SetValue(AutoSnapShotAsImageSourceProperty, value); }
-    }
+
     /// <summary>
     /// Starts/Stops the Preview if camera property has been set
     /// </summary>
@@ -316,45 +210,7 @@ public class CameraView : View, ICameraView
             Self = this;
         }
     }
-    internal void RefreshSnapshot(ImageSource img)
-    {
-        if (AutoSnapShotAsImageSource)
-        {
-            SnapShot = img;
-            OnPropertyChanged(nameof(SnapShot));
-        }
-        OnPropertyChanged(nameof(SnapShotStream));
-        lastSnapshot = DateTime.Now;
-    }
 
-    internal void DecodeBarcode(DecodeDataType data)
-    {
-        if (BarCodeDecoder != null)
-        {
-            var results = BarCodeDecoder.Decode(data);
-            if (results?.Length > 0)
-            {
-                bool refresh = true;
-                if (ControlBarcodeResultDuplicate)
-                {
-                    if (BarCodeResults != null)
-                    {
-                        foreach (var result in results)
-                        {
-                            refresh = BarCodeResults.FirstOrDefault(b => b.Text == result.Text && b.BarcodeFormat == result.BarcodeFormat) == null;
-                            if (refresh) break;
-                        }
-                    }
-                }
-                if (refresh)
-                {
-                    BarCodeResults = results;
-                    OnPropertyChanged(nameof(BarCodeResults));
-                    BarcodeDetected?.Invoke(this, new BarcodeEventArgs { Result = results });
-                }
-            }
-        }
-    }
     private static void CameraChanged(BindableObject bindable, object oldValue, object newValue)
     {
         if (newValue != null && oldValue != newValue && bindable is CameraView cameraView && newValue is CameraInfo)
@@ -363,13 +219,7 @@ public class CameraView : View, ICameraView
             cameraView.OnPropertyChanged(nameof(MaxZoomFactor));
         }
     }
-    private static void TakeAutoSnapShotChanged(BindableObject bindable, object oldValue, object newValue)
-    {
-        if ((bool)newValue && !(bool)oldValue && bindable is CameraView cameraView)
-        {
-            cameraView.RefreshSnapshot(cameraView.GetSnapShot(cameraView.AutoSnapShotFormat));
-        }
-    }
+
     private static async void AutoStartPreviewChanged(BindableObject bindable, object oldValue, object newValue)
     {
         if (oldValue != newValue && bindable is CameraView control)
@@ -382,7 +232,7 @@ public class CameraView : View, ICameraView
                     await control.StopCameraAsync();
             }
             catch { }
-                    
+
         }
     }
     private static async void AutoStartRecordingChanged(BindableObject bindable, object oldValue, object newValue)
@@ -403,11 +253,7 @@ public class CameraView : View, ICameraView
 
         }
     }
-    private static void BarCodeOptionsChanged(BindableObject bindable, object oldValue, object newValue)
-    {
-        if (newValue != null && oldValue != newValue && bindable is CameraView cameraView && newValue is BarcodeDecodeOptions options)
-            cameraView.BarCodeDecoder?.SetDecodeOptions(options);
-    }
+
     /// <summary>
     /// Start playback of the selected camera async. "Camera" property must not be null.
     /// <paramref name="Resolution"/> Indicates the resolution for the preview and photos taken with TakePhotoAsync (must be in Camera.AvailableResolutions). If width or height is 0, max resolution will be taken.
@@ -428,7 +274,7 @@ public class CameraView : View, ICameraView
                 result = await handler.StartCameraAsync(Resolution);
                 if (result == CameraResult.Success)
                 {
-                    BarCodeResults = null;
+
                     OnPropertyChanged(nameof(MinZoomFactor));
                     OnPropertyChanged(nameof(MaxZoomFactor));
                 }
@@ -459,7 +305,7 @@ public class CameraView : View, ICameraView
                 result = await handler.StartRecordingAsync(file, Resolution);
                 if (result == CameraResult.Success)
                 {
-                    BarCodeResults = null;
+
                     OnPropertyChanged(nameof(MinZoomFactor));
                     OnPropertyChanged(nameof(MaxZoomFactor));
                 }
@@ -494,45 +340,7 @@ public class CameraView : View, ICameraView
         }
         return result;
     }
-    /// <summary>
-    /// Takes a photo from the camera selected.
-    /// </summary>
-    /// <param name="imageFormat">The capture image format</param>
-    /// <returns>A stream with the photo info</returns>
-    public async Task<Stream> TakePhotoAsync(ImageFormat imageFormat = ImageFormat.JPEG)
-    {
-        if (Handler != null && Handler is CameraViewHandler handler)
-        {
-            return await handler.TakePhotoAsync(imageFormat);
-        }
-        return null;
-    }
-    /// <summary>
-    /// Takes a capture form the active camera playback.
-    /// </summary>
-    /// <param name="imageFormat">The capture image format</param>
-    public ImageSource GetSnapShot(ImageFormat imageFormat = ImageFormat.PNG)
-    {
-        if (Handler != null && Handler is CameraViewHandler handler)
-        {
-            SnapShot = handler.GetSnapShot(imageFormat);
-        }
-        return SnapShot;
-    }
-    /// <summary>
-    /// Saves a capture form the active camera playback in a file
-    /// </summary>
-    /// <param name="imageFormat">The capture image format</param>
-    /// <param name="SnapFilePath">Full path for the file</param>
-    public async Task<bool> SaveSnapShot(ImageFormat imageFormat, string SnapFilePath)
-    {
-        bool result = false;
-        if (Handler != null && Handler is CameraViewHandler handler)
-        {
-            result = await handler.SaveSnapShot(imageFormat, SnapFilePath);
-        }
-        return result;
-    }
+
     /// <summary>
     /// Force execute the camera autofocus trigger.
     /// </summary>
@@ -555,8 +363,9 @@ public class CameraView : View, ICameraView
     }
     internal void RefreshDevices()
     {
-        Task.Run(() => { 
-            OnPropertyChanged(nameof(Cameras)); 
+        Task.Run(() =>
+        {
+            OnPropertyChanged(nameof(Cameras));
             NumCamerasDetected = Cameras.Count;
             OnPropertyChanged(nameof(Microphones));
             NumMicrophonesDetected = Microphones.Count;

@@ -11,7 +11,7 @@ using MediaPlayer;
 using System.IO;
 using UIKit;
 
-namespace Camera.MAUI.Platforms.Apple;
+namespace WatchMe.Camera.Platforms.Apple;
 
 internal class MauiCameraView : UIView, IAVCaptureVideoDataOutputSampleBufferDelegate, IAVCaptureFileOutputRecordingDelegate, IAVCapturePhotoCaptureDelegate
 {
@@ -44,7 +44,7 @@ internal class MauiCameraView : UIView, IAVCaptureVideoDataOutputSampleBufferDel
         this.cameraView = cameraView;
 
         captureSession = new AVCaptureSession
-        {   
+        {
             SessionPreset = AVCaptureSession.PresetPhoto
         };
         PreviewLayer = new(captureSession)
@@ -85,7 +85,7 @@ internal class MauiCameraView : UIView, IAVCaptureVideoDataOutputSampleBufferDel
                         AVCaptureDevicePosition.Back => CameraPosition.Back,
                         AVCaptureDevicePosition.Front => CameraPosition.Front,
                         _ => CameraPosition.Unknow
-                    };                    
+                    };
                     cameraView.Cameras.Add(new CameraInfo
                     {
                         Name = device.LocalizedName,
@@ -150,7 +150,7 @@ internal class MauiCameraView : UIView, IAVCaptureVideoDataOutputSampleBufferDel
                         movieFileOutputConnection.VideoOrientation = (AVCaptureVideoOrientation)UIDevice.CurrentDevice.Orientation;
                         captureSession.StartRunning();
                         if (File.Exists(file)) File.Delete(file);
-                        
+
                         recordOutput.StartRecordingToOutputFile(NSUrl.FromFilename(file), this);
                         UpdateMirroredImage();
                         SetZoomFactor(cameraView.ZoomFactor);
@@ -218,7 +218,8 @@ internal class MauiCameraView : UIView, IAVCaptureVideoDataOutputSampleBufferDel
             }
             else
                 result = CameraResult.AccessDenied;
-        }else
+        }
+        else
             result = CameraResult.NotInitiated;
         return result;
     }
@@ -254,7 +255,8 @@ internal class MauiCameraView : UIView, IAVCaptureVideoDataOutputSampleBufferDel
             {
                 result = CameraResult.AccessError;
             }
-        }else
+        }
+        else
             result = CameraResult.NotInitiated;
 
         return result;
@@ -333,7 +335,7 @@ internal class MauiCameraView : UIView, IAVCaptureVideoDataOutputSampleBufferDel
             _ => AVCaptureFlashMode.Off
         };
         photoOutput.CapturePhoto(photoSettings, this);
-        while(!photoTaken && !photoError) await Task.Delay(50);
+        while (!photoTaken && !photoError) await Task.Delay(50);
         if (photoError || photo == null)
             return null;
         else
@@ -361,106 +363,8 @@ internal class MauiCameraView : UIView, IAVCaptureVideoDataOutputSampleBufferDel
             return stream;
         }
     }
-    public ImageSource GetSnapShot(ImageFormat imageFormat, bool auto = false)
-    {
-        ImageSource result = null;
 
-        if (started && lastCapture != null && !snapping)
-        {
-            MainThread.InvokeOnMainThreadAsync(() =>
-            {
-                snapping = true;
-                try
-                {
-                    lock (lockCapture)
-                    {
-                        var ciContext = new CIContext();
-                        CGImage cgImage = ciContext.CreateCGImage(lastCapture, lastCapture.Extent);
-                        UIImageOrientation orientation = UIDevice.CurrentDevice.Orientation switch
-                        {
-                            UIDeviceOrientation.LandscapeRight => UIImageOrientation.Down,
-                            UIDeviceOrientation.LandscapeLeft => UIImageOrientation.Up,
-                            UIDeviceOrientation.PortraitUpsideDown => UIImageOrientation.Left,
-                            _ => UIImageOrientation.Right
-                        };
-                        var image = UIImage.FromImage(cgImage, UIScreen.MainScreen.Scale, orientation);
-                        var image2 = CropImage(image);
-                        MemoryStream stream = new();
-                        switch (imageFormat)
-                        {
-                            case ImageFormat.JPEG:
-                                image2.AsJPEG().AsStream().CopyTo(stream);
-                                break;
-                            default:
-                                image2.AsPNG().AsStream().CopyTo(stream);
-                                break;
-                        }
-                        stream.Position = 0;
-                        if (auto)
-                        {
-                            if (cameraView.AutoSnapShotAsImageSource)
-                                result = ImageSource.FromStream(() => stream);
-                            cameraView.SnapShotStream?.Dispose();
-                            cameraView.SnapShotStream = stream;
-                        }
-                        else
-                            result = ImageSource.FromStream(() => stream);
-                    }
-                }
-                catch
-                {
-                }
-                snapping = false;
-            }).Wait();
-        }
 
-        return result;
-    }
-    public bool SaveSnapShot(ImageFormat imageFormat, string SnapFilePath)
-    {
-        bool result = true;
-
-        if (started && lastCapture != null)
-        {
-            if (File.Exists(SnapFilePath)) File.Delete(SnapFilePath);            
-            MainThread.InvokeOnMainThreadAsync(() =>
-            {
-                try
-                {
-                    lock (lockCapture)
-                    {
-                        var ciContext = new CIContext();
-                        CGImage cgImage = ciContext.CreateCGImage(lastCapture, lastCapture.Extent);
-                        UIImageOrientation orientation = UIDevice.CurrentDevice.Orientation switch
-                        {
-                            UIDeviceOrientation.LandscapeRight => UIImageOrientation.Down,
-                            UIDeviceOrientation.LandscapeLeft => UIImageOrientation.Up,
-                            UIDeviceOrientation.PortraitUpsideDown => UIImageOrientation.Left,
-                            _ => UIImageOrientation.Right
-                        };
-                        var image = UIImage.FromImage(cgImage, UIScreen.MainScreen.Scale, orientation);
-                        var image2 = CropImage(image);
-                        switch (imageFormat)
-                        {
-                            case ImageFormat.PNG:
-                                image2.AsPNG().Save(NSUrl.FromFilename(SnapFilePath), true);
-                                break;
-                            case ImageFormat.JPEG:
-                                image2.AsJPEG().Save(NSUrl.FromFilename(SnapFilePath), true);
-                                break;
-                        }
-                    }
-                }
-                catch
-                {
-                    result = false;
-                }
-            }).Wait();
-        }
-        else
-            result = false;
-        return result;
-    }
     public UIImage CropImage(UIImage originalImage)
     {
         nfloat x, y, width, height;
@@ -492,76 +396,12 @@ internal class MauiCameraView : UIView, IAVCaptureVideoDataOutputSampleBufferDel
 
         return croppedImage;
     }
-    private void ProccessQR()
-    {
-        MainThread.BeginInvokeOnMainThread(() =>
-        {
-            try
-            {
-                UIImage image2;
-                lock (lockCapture)
-                {
-                    var ciContext = new CIContext();
-                    CGImage cgImage = ciContext.CreateCGImage(lastCapture, lastCapture.Extent);
-                    var image = UIImage.FromImage(cgImage, UIScreen.MainScreen.Scale, UIImageOrientation.Right);
-                    image2 = CropImage(image);
-                }
-                cameraView.DecodeBarcode(image2);
-            }
-            catch
-            {
-            }
-        });
-    }
-    private void ProcessImage(CIImage capture)
-    {        
-        new Task(() =>
-        {
-            lock (lockCapture)
-            {
-                lastCapture?.Dispose();
-                lastCapture = capture;
-            }
-            if (!snapping && cameraView.AutoSnapShotSeconds > 0 && (DateTime.Now - cameraView.lastSnapshot).TotalSeconds >= cameraView.AutoSnapShotSeconds)
-                cameraView.RefreshSnapshot(GetSnapShot(cameraView.AutoSnapShotFormat, true));
-            else if (cameraView.BarCodeDetectionEnabled && currentFrames >= cameraView.BarCodeDetectionFrameRate)
-            {
-                bool processQR = false;
-                lock (cameraView.currentThreadsLocker)
-                {
-                    if (cameraView.currentThreads < cameraView.BarCodeDetectionMaxThreads)
-                    {
-                        cameraView.currentThreads++;
-                        processQR = true;
-                    }
-                }
-                if (processQR)
-                {
-                    ProccessQR();
-                    currentFrames = 0;
-                    lock (cameraView.currentThreadsLocker) cameraView.currentThreads--;
-                }
-            }
-        }).Start();
-    }
+
 
     [Export("captureOutput:didOutputSampleBuffer:fromConnection:")]
     public void DidOutputSampleBuffer(AVCaptureOutput captureOutput, CMSampleBuffer sampleBuffer, AVCaptureConnection connection)
     {
-        frames++;
-        currentFrames++;
-        if (frames >= 12 || (cameraView.BarCodeDetectionEnabled && currentFrames >= cameraView.BarCodeDetectionFrameRate))
-        {
-            var capture = CIImage.FromImageBuffer(sampleBuffer.GetImageBuffer());
-            ProcessImage(capture);
-            sampleBuffer.Dispose();
-            frames = 0;
-            GC.Collect();
-        }
-        else
-        {
-            sampleBuffer?.Dispose();
-        }
+
     }
     [Export("captureOutput:didFinishProcessingPhotoSampleBuffer:previewPhotoSampleBuffer:resolvedSettings:bracketSettings:error:")]
     void DidFinishProcessingPhoto(AVCapturePhotoOutput captureOutput, CMSampleBuffer photoSampleBuffer, CMSampleBuffer previewPhotoSampleBuffer, AVCaptureResolvedPhotoSettings resolvedSettings, AVCaptureBracketedStillImageSettings bracketSettings, NSError error)
@@ -595,7 +435,7 @@ internal class MauiCameraView : UIView, IAVCaptureVideoDataOutputSampleBufferDel
                 transform = CATransform3D.MakeRotation((nfloat)rotation, 0, 0, 1.0f);
                 break;
             case UIDeviceOrientation.LandscapeRight:
-                var rotation2 = cameraView.Camera?.Position == CameraPosition.Back ? Math.PI / 2 : -Math.PI /2;
+                var rotation2 = cameraView.Camera?.Position == CameraPosition.Back ? Math.PI / 2 : -Math.PI / 2;
                 transform = CATransform3D.MakeRotation((nfloat)rotation2, 0, 0, 1.0f);
                 break;
         }
@@ -606,7 +446,7 @@ internal class MauiCameraView : UIView, IAVCaptureVideoDataOutputSampleBufferDel
 
     public void FinishedRecording(AVCaptureFileOutput captureOutput, NSUrl outputFileUrl, NSObject[] connections, NSError error)
     {
-        
+
     }
 }
 #endif

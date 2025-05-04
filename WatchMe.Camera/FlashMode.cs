@@ -1,5 +1,5 @@
-﻿namespace Camera.MAUI; 
-public enum FlashMode 
+﻿namespace WatchMe.Camera;
+public enum FlashMode
 {
     Auto,
     Enabled,

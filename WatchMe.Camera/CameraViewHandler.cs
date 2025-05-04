@@ -1,16 +1,16 @@
 ﻿using Microsoft.Maui.Handlers;
 #if IOS || MACCATALYST
 
-using PlatformView = Camera.MAUI.Platforms.Apple.MauiCameraView;
+using PlatformView = WatchMe.Camera.Platforms.Apple.MauiCameraView;
 #elif ANDROID
-using PlatformView = Camera.MAUI.Platforms.Android.MauiCameraView;
+using PlatformView = WatchMe.Camera.Platforms.Android.MauiCameraView;
 #elif WINDOWS
-using PlatformView = Camera.MAUI.Platforms.Windows.MauiCameraView;
+using PlatformView = WatchMe.Camera.Platforms.Windows.MauiCameraView;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID)
 using PlatformView = System.Object;
 #endif
 
-namespace Camera.MAUI;
+namespace WatchMe.Camera;
 
 internal partial class CameraViewHandler : ViewHandler<CameraView, PlatformView>
 {
@@ -110,42 +110,7 @@ internal partial class CameraViewHandler : ViewHandler<CameraView, PlatformView>
         }
         return Task.Run(() => { return CameraResult.AccessError; });
     }
-    public ImageSource GetSnapShot(ImageFormat imageFormat)
-    {
-        if (PlatformView != null)
-        {
-#if WINDOWS || ANDROID || IOS || MACCATALYST
-            return PlatformView.GetSnapShot(imageFormat);
-#endif
-        }
-        return null;
-    }
-    public Task<Stream> TakePhotoAsync(ImageFormat imageFormat)
-    {
-        if (PlatformView != null)
-        {
-#if  IOS || MACCATALYST || WINDOWS
-            return PlatformView.TakePhotoAsync(imageFormat);
-#elif ANDROID
-            return Task.Run(() => { return PlatformView.TakePhotoAsync(imageFormat); });
-#endif
-        }
-        return Task.Run(() => { Stream result = null; return result; });
-    }
-    public Task<bool> SaveSnapShot(ImageFormat imageFormat, string SnapFilePath)
-    {
-        if (PlatformView != null)
-        {
-#if WINDOWS
-            return PlatformView.SaveSnapShot(imageFormat, SnapFilePath);
-#elif ANDROID || IOS || MACCATALYST
-            var task = new Task<bool>(() => { return PlatformView.SaveSnapShot(imageFormat, SnapFilePath); });
-            task.Start();
-            return task;
-#endif
-        }
-        return Task.Run(() => { return false; });
-    }
+
     public void ForceAutoFocus()
     {
 #if ANDROID || WINDOWS || IOS || MACCATALYST

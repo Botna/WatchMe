@@ -1,9 +1,10 @@
+using WatchMe.Camera;
 namespace Camera.MAUI;
 
 public partial class BarcodeImage : ContentView
 {
     public static readonly BindableProperty BarcodeEncoderProperty = BindableProperty.Create(nameof(BarcodeEncoder), typeof(IBarcodeEncoder), typeof(BarcodeImage), null);
-    public static readonly BindableProperty BarcodeForegroundProperty = BindableProperty.Create(nameof(BarcodeForeground), typeof(Color), typeof(BarcodeImage), Colors.Black, propertyChanged:RefreshRender);
+    public static readonly BindableProperty BarcodeForegroundProperty = BindableProperty.Create(nameof(BarcodeForeground), typeof(Color), typeof(BarcodeImage), Colors.Black, propertyChanged: RefreshRender);
     public static readonly BindableProperty BarcodeBackgroundProperty = BindableProperty.Create(nameof(BarcodeBackground), typeof(Color), typeof(BarcodeImage), Colors.White, propertyChanged: RefreshRender);
     public static readonly BindableProperty BarcodeWidthProperty = BindableProperty.Create(nameof(BarcodeWidth), typeof(int), typeof(BarcodeImage), 200, propertyChanged: RefreshRender);
     public static readonly BindableProperty BarcodeHeightProperty = BindableProperty.Create(nameof(BarcodeHeight), typeof(int), typeof(BarcodeImage), 200, propertyChanged: RefreshRender);
@@ -85,16 +86,16 @@ public partial class BarcodeImage : ContentView
     }
 
     public BarcodeImage()
-	{
-		InitializeComponent();
-	}
+    {
+        InitializeComponent();
+    }
     private static void RefreshRender(BindableObject bindable, object oldValue, object newValue)
     {
         if (oldValue != newValue && bindable is BarcodeImage barcodeImage && barcodeImage.BarcodeEncoder != null)
         {
             if (!string.IsNullOrEmpty(barcodeImage.Barcode) && barcodeImage.BarcodeWidth > 0 && barcodeImage.BarcodeHeight > 0)
             {
-                var imageSourceStream = barcodeImage.BarcodeEncoder.EncodeBarcode(barcodeImage.Barcode, barcodeImage.BarcodeFormat, barcodeImage.BarcodeWidth, 
+                var imageSourceStream = barcodeImage.BarcodeEncoder.EncodeBarcode(barcodeImage.Barcode, barcodeImage.BarcodeFormat, barcodeImage.BarcodeWidth,
                                             barcodeImage.BarcodeHeight, barcodeImage.BarcodeMargin, barcodeImage.BarcodeForeground, barcodeImage.BarcodeBackground);
                 ImageSource imageSource = ImageSource.FromStream(() => imageSourceStream);
                 if (imageSource != null) barcodeImage.image.Source = imageSource;

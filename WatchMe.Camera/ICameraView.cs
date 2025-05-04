@@ -1,7 +1,5 @@
-﻿using Microsoft.Maui.Controls;
-
-namespace Camera.MAUI; 
-public interface ICameraView 
+﻿namespace WatchMe.Camera;
+public interface ICameraView
 {
     public FlashMode FlashMode { get; set; }
 }

@@ -1,4 +1,4 @@
-﻿namespace Camera.MAUI;
+﻿namespace WatchMe.Camera;
 
 public class CameraInfo
 {

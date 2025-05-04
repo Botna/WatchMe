@@ -8,7 +8,7 @@ using DecodeDataType = Windows.Graphics.Imaging.SoftwareBitmap;
 using DecodeDataType = System.Object;
 #endif
 
-namespace Camera.MAUI;
+namespace WatchMe.Camera;
 
 public interface IBarcodeDecoder
 {
