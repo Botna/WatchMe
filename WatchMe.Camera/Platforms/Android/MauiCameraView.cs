@@ -52,6 +52,15 @@ internal class MauiCameraView : GridLayout
 
     public MauiCameraView(Context context, CameraView cameraView) : base(context)
     {
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine(" Maui Camera View Constructor - Android");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+
+
         this.context = context;
         this.cameraView = cameraView;
 
@@ -69,26 +78,33 @@ internal class MauiCameraView : GridLayout
         InitDevices();
     }
 
-    public MauiCameraView(Context context) : base(context)
-    {
-        this.context = context;
+    //public MauiCameraView(Context context) : base(context)
+    //{
+    //    this.context = context;
 
-        textureView = new(context);
-        stateListener = new MyCameraStateCallback(this);
-        AddView(textureView);
-        ORIENTATIONS.Append((int)SurfaceOrientation.Rotation0, 90);
-        ORIENTATIONS.Append((int)SurfaceOrientation.Rotation90, 0);
-        ORIENTATIONS.Append((int)SurfaceOrientation.Rotation180, 270);
-        ORIENTATIONS.Append((int)SurfaceOrientation.Rotation270, 180);
-        ORIENTATIONSFRONT.Append((int)SurfaceOrientation.Rotation0, 270);
-        ORIENTATIONSFRONT.Append((int)SurfaceOrientation.Rotation90, 0);
-        ORIENTATIONSFRONT.Append((int)SurfaceOrientation.Rotation180, 90);
-        ORIENTATIONSFRONT.Append((int)SurfaceOrientation.Rotation270, 180);
-        InitDevices();
-    }
+    //    textureView = new(context);
+    //    stateListener = new MyCameraStateCallback(this);
+    //    AddView(textureView);
+    //    ORIENTATIONS.Append((int)SurfaceOrientation.Rotation0, 90);
+    //    ORIENTATIONS.Append((int)SurfaceOrientation.Rotation90, 0);
+    //    ORIENTATIONS.Append((int)SurfaceOrientation.Rotation180, 270);
+    //    ORIENTATIONS.Append((int)SurfaceOrientation.Rotation270, 180);
+    //    ORIENTATIONSFRONT.Append((int)SurfaceOrientation.Rotation0, 270);
+    //    ORIENTATIONSFRONT.Append((int)SurfaceOrientation.Rotation90, 0);
+    //    ORIENTATIONSFRONT.Append((int)SurfaceOrientation.Rotation180, 90);
+    //    ORIENTATIONSFRONT.Append((int)SurfaceOrientation.Rotation270, 180);
+    //    InitDevices();
+    //}
 
     private void InitDevices()
     {
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine(" Initializing the devices");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
         if (!initiated && cameraView != null)
         {
             cameraManager = (CameraManager)context.GetSystemService(Context.CameraService);
@@ -158,6 +174,13 @@ internal class MauiCameraView : GridLayout
 
     internal async Task<CameraResult> StartRecordingAsync(string file, Microsoft.Maui.Graphics.Size Resolution)
     {
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine(" StartRecordingAsync");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
         var result = CameraResult.Success;
         if (initiated && !recording)
         {
@@ -226,6 +249,13 @@ internal class MauiCameraView : GridLayout
 
     private void StartPreview()
     {
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine(" StartPreview");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
         while (textureView.SurfaceTexture == null || !textureView.IsAvailable) Thread.Sleep(100);
         //SurfaceTexture texture = textureView.SurfaceTexture;
         SurfaceTexture texture = new SurfaceTexture(10);
@@ -261,6 +291,14 @@ internal class MauiCameraView : GridLayout
     private void UpdatePreview()
 
     {
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine(" UpdatePreview");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+
         if (null == cameraDevice)
             return;
 
@@ -282,6 +320,13 @@ internal class MauiCameraView : GridLayout
     }
     internal async Task<CameraResult> StartCameraAsync(Microsoft.Maui.Graphics.Size PhotosResolution)
     {
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine(" StartCameraAsync");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
         var result = CameraResult.Success;
         if (initiated)
         {
@@ -329,12 +374,26 @@ internal class MauiCameraView : GridLayout
     }
     internal Task<CameraResult> StopRecordingAsync()
     {
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine(" StopRecordingAsync");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
         recording = false;
         return StartCameraAsync(cameraView.PhotosResolution);
     }
 
     internal CameraResult StopCamera()
     {
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine(" StopCamera");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
+        System.Diagnostics.Debug.WriteLine("*****************************************");
         CameraResult result = CameraResult.Success;
         if (initiated)
         {

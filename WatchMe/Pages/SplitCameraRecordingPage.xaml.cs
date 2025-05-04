@@ -61,7 +61,7 @@ public partial class SplitCameraRecordingPage : ContentPage
         var lastBackSize = backSizes.Last();
 
         var frontRecordTask = await cameraViewFront.StartRecordingAsync(Path.Combine(FileSystem.Current.CacheDirectory, $"Front_{_videoTimeStampSuffix}.mp4"), lastFrontSize);
-        var backRecordTask = await cameraViewBack.StartRecordingAsync(Path.Combine(FileSystem.Current.CacheDirectory, $"Back_{_videoTimeStampSuffix}.mp4"), lastBackSize);
+        //var backRecordTask = await cameraViewBack.StartRecordingAsync(Path.Combine(FileSystem.Current.CacheDirectory, $"Back_{_videoTimeStampSuffix}.mp4"), lastBackSize);
 
     }
 
@@ -73,9 +73,10 @@ public partial class SplitCameraRecordingPage : ContentPage
         var result = await cameraViewFront.StopRecordingAsync();
         result = await cameraViewBack.StopRecordingAsync();
 
-        var backFileTask = _orchestrationService.ProcessSavedVideoFile(backFileName, FileSystem.Current.CacheDirectory);
+        //var backFileTask = _orchestrationService.ProcessSavedVideoFile(backFileName, FileSystem.Current.CacheDirectory);
         var frontFileTask = _orchestrationService.ProcessSavedVideoFile(frontFileName, FileSystem.Current.CacheDirectory);
 
-        await Task.WhenAll(backFileTask, frontFileTask);
+        //await Task.WhenAll(backFileTask, frontFileTask);
+        await Task.WhenAll(frontFileTask);
     }
 }
