@@ -1,5 +1,5 @@
 ﻿using System.Collections.ObjectModel;
-using WatchMe.Camera.ZXingHelper;
+
 
 
 #if IOS || MACCATALYST
@@ -171,15 +171,6 @@ public class CameraView : View, ICameraView
         get { return (bool)GetValue(AutoStartRecordingProperty); }
         set { SetValue(AutoStartRecordingProperty, value); }
     }
-    /// <summary>
-    /// If true BarcodeDetected event will invoke only if a Results is diferent from preview Results
-    /// </summary>
-    public bool ControlBarcodeResultDuplicate { get; set; } = false;
-    public delegate void BarcodeResultHandler(object sender, BarcodeEventArgs args);
-    /// <summary>
-    /// Event launched every time a code is detected in the image if "BarCodeDetectionEnabled" is set to true.
-    /// </summary>
-    public event BarcodeResultHandler BarcodeDetected;
     /// <summary>
     /// Event launched when "Cameras" property has been loaded.
     /// </summary>
