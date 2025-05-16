@@ -59,7 +59,6 @@ namespace WatchMe
             Debug.WriteLine("******************** hello ********************");
             Debug.WriteLine("******************** hello ********************");
             Debug.WriteLine("******************** hello ********************");
-
 #endif
 
             return builder.Build();
