@@ -79,6 +79,5 @@ public partial class SplitCameraRecordingPage : ContentPage
         var frontFileTask = _orchestrationService.ProcessSavedVideoFile(backFileName, FileSystem.Current.CacheDirectory);
 
         await Task.WhenAll(backFileTask, frontFileTask);
-        //await Task.WhenAll(frontFileTask);
     }
 }
