@@ -1,7 +1,8 @@
-﻿using Camera.MAUI;
-using CommunityToolkit.Maui;
+﻿using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
 using Plugin.Maui.ScreenRecording;
+using System.Diagnostics;
+using WatchMe.Camera;
 using WatchMe.Extensions;
 using WatchMe.Pages;
 using WatchMe.Persistance;
@@ -41,9 +42,23 @@ namespace WatchMe
             {
                 ISEMULATED = true;
             }
+            Debug.WriteLine("******************** hello ********************");
+            Debug.WriteLine("******************** hello ********************");
+            Debug.WriteLine("******************** hello ********************");
+            Debug.WriteLine("******************** hello ********************");
 
 #if DEBUG
             builder.Logging.AddDebug();
+            Debug.WriteLine("******************** hello ********************");
+            Debug.WriteLine("******************** hello ********************");
+            Debug.WriteLine("******************** hello ********************");
+            Debug.WriteLine("******************** hello ********************");
+            Debug.WriteLine("******************** hello ********************");
+            Debug.WriteLine("******************** hello ********************");
+            Debug.WriteLine("******************** hello ********************");
+            Debug.WriteLine("******************** hello ********************");
+            Debug.WriteLine("******************** hello ********************");
+            Debug.WriteLine("******************** hello ********************");
 #endif
 
             return builder.Build();
