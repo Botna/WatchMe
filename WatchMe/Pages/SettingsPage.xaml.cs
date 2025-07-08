@@ -12,7 +12,7 @@ public partial class SettingsPage : ContentPage
     private string ASCConnectionString = string.Empty;
     private bool ASCConnStringChanged = false;
 
-    private const string PhoneNumberPreferencesKey = "EVENTSTART_NOTIFY_PHONENUMBER";
+
     private string PhoneNumber = string.Empty;
     private bool PhoneNumberChanged = false;
 
@@ -45,12 +45,23 @@ public partial class SettingsPage : ContentPage
         }
         if (PhoneNumberChanged)
         {
+            PermissionStatus status = await Permissions.CheckStatusAsync<Permissions.Sms>();
+            if (status != PermissionStatus.Granted)
+            {
+                status = await Permissions.RequestAsync<Permissions.Sms>();
+                if (status != PermissionStatus.Granted)
+                {
+                    await ToastHelper.CreateToast(WatchMeConstants.Settings_PhoneNumber_Discarded);
+                    return;
+                }
+            }
+
             if (!ValidatePhoneFormat(PhoneNumber))
             {
                 await ToastHelper.CreateToast(WatchMeConstants.Settings_PhoneNumber_NonNumericError);
                 return;
             }
-            _preferences.Set(PhoneNumberPreferencesKey, PhoneNumber);
+            _preferences.Set(WatchMeConstants.PhoneNumberPreferencesKey, PhoneNumber);
         }
         await ToastHelper.CreateToast(WatchMeConstants.Settings_Saved);
         await Navigation.PopAsync();
@@ -58,6 +69,10 @@ public partial class SettingsPage : ContentPage
 
     private bool ValidatePhoneFormat(string phoneFormat)
     {
+        if (string.IsNullOrWhiteSpace(phoneFormat))
+        {
+            return true;
+        }
         var match = Regex.Match(phoneFormat, PhoneNumberRegex, RegexOptions.IgnoreCase);
         return match.Success;
     }

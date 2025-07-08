@@ -16,14 +16,15 @@ namespace WatchMe.UnitTests.Services
             byte[]? videoBytes = new byte[10];
 
 
-            var fileSystemServiceMock = new Mock<IFileSystemService>();
+            var fileSystemServiceMock = new Mock<IFileSystemService>(MockBehavior.Strict);
             fileSystemServiceMock.Setup(x => x.GetVideoBytesByFile(combinedPath)).Returns(Task.FromResult(videoBytes));
             fileSystemServiceMock.Setup(x => x.SaveVideoToFileSystem(videoBytes, filename)).Returns(true);
             fileSystemServiceMock.Setup(x => x.GetFileStreamOfFile(combinedPath));
-            var cloudProviderServiceMock = new Mock<ICloudProviderService>();
+            var cloudProviderServiceMock = new Mock<ICloudProviderService>(MockBehavior.Strict);
             cloudProviderServiceMock.Setup(x => x.UploadContentToCloud(It.IsAny<FileStream>(), filename));
+            var notificationServiceMock = new Mock<INotificationService>(MockBehavior.Strict);
 
-            var service = new OrchestrationService(cloudProviderServiceMock.Object, fileSystemServiceMock.Object);
+            var service = new OrchestrationService(cloudProviderServiceMock.Object, fileSystemServiceMock.Object, notificationServiceMock.Object);
 
             await service.ProcessSavedVideoFile(filename, path);
 
