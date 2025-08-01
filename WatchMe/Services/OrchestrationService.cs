@@ -28,8 +28,8 @@ namespace WatchMe.Services
             var message = "Andrew just started a WatchMe Routine. Click here to watch along: https://www.youtube.com/watch?v=dQw4w9WgXcQ";
             await _notificationService.SendTextToConfiguredContact(message);
 
-            await StartRecordingAsync(frontCameraView, Path.Combine(FileSystem.Current.CacheDirectory, $"Front_{videoTimeStampSuffix}.mp4"));
-            await StartRecordingAsync(backCameraView, Path.Combine(FileSystem.Current.CacheDirectory, $"Back_{videoTimeStampSuffix}.mp4"));
+            await StartRecordingAsync(frontCameraView, _fileSystemService.BuildCacheFileDirectory($"Front_{videoTimeStampSuffix}.mp4"));
+            await StartRecordingAsync(backCameraView, _fileSystemService.BuildCacheFileDirectory($"Back_{videoTimeStampSuffix}.mp4"));
         }
 
         //Todo, figure out how to remove public here
