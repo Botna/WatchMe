@@ -8,6 +8,7 @@
 
         //SETTINGS PAGE
         public const string Settings_AzureSCConnstry_Entry = "Settings_AzureSCConnstry_Entry";
+        public const string Settings_WatchStarted_PhoneNumber = "Settings_WatchStarted_PhoneNumber";
         public const string Settings_SaveButton = "Settings_SaveButton";
     }
 }

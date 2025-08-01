@@ -36,6 +36,7 @@ namespace WatchMe
 
             builder.Services.AddTransient<IOrchestrationService, OrchestrationService>();
             builder.Services.AddTransient<ICloudProviderService, CloudProviderService>();
+            builder.Services.AddTransient<INotificationService, NotificationService>();
 
 
             if (DeviceInfo.Name == "ui_automation_emulator")
