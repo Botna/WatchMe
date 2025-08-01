@@ -26,15 +26,18 @@ namespace WatchMe.Services
         public async Task InitiateRecordingProcedure(CameraView frontCameraView, CameraView backCameraView, string videoTimeStampSuffix)
         {
             var message = "Andrew just started a WatchMe Routine. Click here to watch along: https://www.youtube.com/watch?v=dQw4w9WgXcQ";
-            _notificationService.SendTextToConfiguredContact(message);
-            var frontSizes = frontCameraView.Camera.AvailableResolutions;
-            var lastFrontSize = frontSizes.Last();
+            await _notificationService.SendTextToConfiguredContact(message);
 
-            var backSizes = backCameraView.Camera.AvailableResolutions;
-            var lastBackSize = backSizes.Last();
+            await StartRecordingAsync(frontCameraView, Path.Combine(FileSystem.Current.CacheDirectory, $"Front_{videoTimeStampSuffix}.mp4"));
+            await StartRecordingAsync(backCameraView, Path.Combine(FileSystem.Current.CacheDirectory, $"Back_{videoTimeStampSuffix}.mp4"));
+        }
 
-            var frontRecordTask = await frontCameraView.StartRecordingAsync(Path.Combine(FileSystem.Current.CacheDirectory, $"Front_{videoTimeStampSuffix}.mp4"), lastFrontSize);
-            var backRecordTask = await backCameraView.StartRecordingAsync(Path.Combine(FileSystem.Current.CacheDirectory, $"Back_{videoTimeStampSuffix}.mp4"), lastBackSize);
+        //Todo, figure out how to remove public here
+        public virtual Task<CameraResult> StartRecordingAsync(CameraView cameraView, string path)
+        {
+            var sizes = cameraView.Camera.AvailableResolutions;
+
+            return cameraView.StartRecordingAsync(path, sizes.Last());
         }
 
         public Task InitiateRecordingProcedure()

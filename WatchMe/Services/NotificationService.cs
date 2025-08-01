@@ -20,10 +20,14 @@ namespace WatchMe.Services
             if (configuredPhoneNumber == null)
             {
                 await ToastHelper.CreateToast(WatchMeConstants.Settings_PhoneNumber_NotConfigured);
+                return;
             }
 #if ANDROID
-            var smsM = SmsManager.Default;
-            smsM.SendTextMessage(configuredPhoneNumber, null, messageToSend, null, null);
+            if (!MauiProgram.ISEMULATED)
+            {
+                var smsM = SmsManager.Default;
+                smsM.SendTextMessage(configuredPhoneNumber, null, messageToSend, null, null);
+            }
 #endif
         }
     }
