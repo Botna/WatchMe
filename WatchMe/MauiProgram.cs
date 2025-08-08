@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.LifecycleEvents;
 using Plugin.Maui.ScreenRecording;
 using System.Diagnostics;
 using WatchMe.Camera;
@@ -25,6 +26,27 @@ namespace WatchMe
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+                })
+                .ConfigureLifecycleEvents(events =>
+                {
+#if ANDROID
+                    events.AddAndroid(android => android
+                       .OnActivityResult((activity, requestCode, resultCode, data) => LogEvent(nameof(AndroidLifecycle.OnActivityResult), requestCode.ToString()))
+                       .OnStart((activity) => LogEvent(nameof(AndroidLifecycle.OnStart)))
+                       .OnCreate((activity, bundle) => LogEvent(nameof(AndroidLifecycle.OnCreate)))
+                       .OnBackPressed((activity) => LogEvent(nameof(AndroidLifecycle.OnBackPressed)) && false)
+                       .OnDestroy((activity) => LogEvent(nameof(AndroidLifecycle.OnDestroy)))
+                       .OnPause((activity) => LogEvent(nameof(AndroidLifecycle.OnPause)))
+                       .OnResume((activity) => LogEvent(nameof(AndroidLifecycle.OnResume)))
+                       .OnStop((activity) => LogEvent(nameof(AndroidLifecycle.OnStop))));
+
+#endif
+                    static bool LogEvent(string eventName, string type = null)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"**************************************************************");
+                        System.Diagnostics.Debug.WriteLine($"Lifecycle event: {eventName}{(type == null ? string.Empty : $" ({type})")}");
+                        return true;
+                    }
                 });
 
             builder.AddPlatformSpecificDependancyInjection();
