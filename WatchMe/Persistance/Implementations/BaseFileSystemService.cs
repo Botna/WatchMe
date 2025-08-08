@@ -10,5 +10,9 @@ namespace WatchMe.Persistance.Implementations
 
         public async Task<byte[]?> GetVideoBytesByFile(string filePath) =>
             await File.ReadAllBytesAsync(filePath);
+
+        //FileSystem.Current.* doesnt work in unit tests, so must be mockable.
+        public string BuildCacheFileDirectory(string fileName) =>
+            Path.Combine(FileSystem.Current.CacheDirectory, fileName);
     }
 }

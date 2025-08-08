@@ -44,27 +44,18 @@ public partial class SplitCameraRecordingPage : ContentPage
 
     private async Task StartRecordingWhenBothCamerasLoaded()
     {
-        var frontCamera = cameraViewFront.Cameras.FirstOrDefault(x => x.Position == CameraPosition.Front);
-        var backCamera = cameraViewBack.Cameras.FirstOrDefault(x => x.Position == CameraPosition.Back);
         if (camerasLoaded.Count() == 1)
         {
             return;
         }
 
+        var frontCamera = cameraViewFront.Cameras.FirstOrDefault(x => x.Position == CameraPosition.Front);
+        var backCamera = cameraViewBack.Cameras.FirstOrDefault(x => x.Position == CameraPosition.Back);
+
         cameraViewFront.Camera = frontCamera;
         cameraViewBack.Camera = backCamera;
 
-        var frontSizes = cameraViewFront.Camera.AvailableResolutions;
-        var lastFrontSize = frontSizes.Last();
-
-        var backSizes = cameraViewBack.Camera.AvailableResolutions;
-        var lastBackSize = backSizes.Last();
-
-
-
-        var frontRecordTask = await cameraViewFront.StartRecordingAsync(Path.Combine(FileSystem.Current.CacheDirectory, $"Front_{_videoTimeStampSuffix}.mp4"), lastFrontSize);
-        var backRecordTask = await cameraViewBack.StartRecordingAsync(Path.Combine(FileSystem.Current.CacheDirectory, $"Back_{_videoTimeStampSuffix}.mp4"), lastBackSize);
-
+        await _orchestrationService.InitiateRecordingProcedure(cameraViewFront, cameraViewBack, _videoTimeStampSuffix);
     }
 
     protected override async void OnNavigatingFrom(NavigatingFromEventArgs e)

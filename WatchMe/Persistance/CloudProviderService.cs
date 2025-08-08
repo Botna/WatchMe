@@ -1,4 +1,5 @@
 ﻿using Azure.Storage.Blobs;
+using WatchMe.Helpers;
 
 namespace WatchMe.Persistance
 {
@@ -23,16 +24,22 @@ namespace WatchMe.Persistance
             {
                 throw new Exception($"unable to gather {AZURESTORAGECONTAINERCONNECTIONSTRINGKEY} from secure storage");
             }
+            try
+            {
+                var blobServiceClient = new BlobServiceClient(storageContainerConnectionString);
 
-            var blobServiceClient = new BlobServiceClient(storageContainerConnectionString);
+                string containerName = "watchmefileuploadcontainer";
 
-            string containerName = "watchmefileuploadcontainer";
-
-            var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+                var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
 
 
-            BlobClient blobClient = containerClient.GetBlobClient(contentName);
-            var result = await blobClient.UploadAsync(fileStream, true);
+                BlobClient blobClient = containerClient.GetBlobClient(contentName);
+                var result = await blobClient.UploadAsync(fileStream, true);
+            }
+            catch (Exception ex)
+            {
+                ToastHelper.CreateToast("Issue uploading to SC");
+            }
         }
 
         public async Task<string> GetAzureConnectionString() =>
