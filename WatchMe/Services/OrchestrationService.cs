@@ -6,16 +6,23 @@ namespace WatchMe.Services
 {
     public interface IOrchestrationService
     {
-        Task ProcessSavedVideoFile(string filename, string path);
+        void Initialize(CameraView frontCameraView, CameraView backCameraView);
         Task InitiateRecordingProcedure();
-        Task InitiateRecordingProcedure(CameraView frontCameraView, CameraView backCameraView, string videoTimeStampSuffix);
+        Task StopRecordingProcedure();
     }
 
     public class OrchestrationService : IOrchestrationService
     {
-        public readonly ICloudProviderService _cloudProviderService;
-        public readonly IFileSystemService _fileSystemService;
-        public readonly INotificationService _notificationService;
+        private readonly ICloudProviderService _cloudProviderService;
+        private readonly IFileSystemService _fileSystemService;
+        private readonly INotificationService _notificationService;
+
+        private CameraView _frontCameraView;
+        private CameraView _backCameraView;
+        private string _videoTimeStamp;
+        private string _frontVideoFileName;
+        private string _backVideoFileName;
+
         public OrchestrationService(ICloudProviderService cloudProviderService, IFileSystemService fileSystemService, INotificationService notificationService)
         {
             _cloudProviderService = cloudProviderService;
@@ -23,26 +30,49 @@ namespace WatchMe.Services
             _notificationService = notificationService;
         }
 
-        public async Task InitiateRecordingProcedure(CameraView frontCameraView, CameraView backCameraView, string videoTimeStampSuffix)
+        public void Initialize(CameraView front, CameraView back)
         {
-            var message = "Andrew just started a WatchMe Routine. Click here to watch along: https://www.youtube.com/watch?v=dQw4w9WgXcQ";
-            await _notificationService.SendTextToConfiguredContact(message);
-
-            await StartRecordingAsync(frontCameraView, _fileSystemService.BuildCacheFileDirectory($"Front_{videoTimeStampSuffix}.mp4"));
-            await StartRecordingAsync(backCameraView, _fileSystemService.BuildCacheFileDirectory($"Back_{videoTimeStampSuffix}.mp4"));
+            _videoTimeStamp = DateTime.UtcNow.ToString("yyyyMMddHHmmssffff");
+            _frontCameraView = front;
+            _backCameraView = back;
         }
 
-        //Todo, figure out how to remove public here
+        public async Task InitiateRecordingProcedure()
+        {
+            if (_frontCameraView == null || _backCameraView == null)
+            {
+                //This is our background process and this wont work yet.
+                return;
+            }
+
+            _frontVideoFileName = $"Front_{_videoTimeStamp}.mp4";
+            _backVideoFileName = $"Back_{_videoTimeStamp}.mp4";
+
+            await _notificationService.SendTextToConfiguredContact();
+
+            await StartRecordingAsync(_frontCameraView, _fileSystemService.BuildCacheFileDirectory(_frontVideoFileName));
+            await StartRecordingAsync(_backCameraView, _fileSystemService.BuildCacheFileDirectory(_backVideoFileName));
+        }
+
+        public async Task StopRecordingProcedure()
+        {
+            var frontCameraStopTask = _frontCameraView.StopCameraAsync();
+            var backCameraStopTask = _backCameraView.StopCameraAsync();
+
+            await frontCameraStopTask;
+            var backVideoProcessingTask = ProcessSavedVideoFile(_backVideoFileName, FileSystem.Current.CacheDirectory);
+
+            await backCameraStopTask;
+            var frontVideoProcessingTask = ProcessSavedVideoFile(_frontVideoFileName, FileSystem.Current.CacheDirectory);
+
+            await Task.WhenAll(backVideoProcessingTask, frontVideoProcessingTask);
+        }
+
         public virtual Task<CameraResult> StartRecordingAsync(CameraView cameraView, string path)
         {
             var sizes = cameraView.Camera.AvailableResolutions;
 
             return cameraView.StartRecordingAsync(path, sizes.Last());
-        }
-
-        public Task InitiateRecordingProcedure()
-        {
-            throw new NotImplementedException();
         }
 
         public async Task ProcessSavedVideoFile(string filename, string path)

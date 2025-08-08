@@ -9,13 +9,14 @@ namespace WatchMe.Services
 {
     public interface INotificationService
     {
-        Task SendTextToConfiguredContact(string messageToSend);
+        Task SendTextToConfiguredContact();
     }
     public class NotificationService : INotificationService
     {
-        public async Task SendTextToConfiguredContact(string messageToSend)
+        public async Task SendTextToConfiguredContact()
         {
             var configuredPhoneNumber = Preferences.Default.Get(WatchMeConstants.PhoneNumberPreferencesKey, "");
+            var message = "Andrew just started a WatchMe Routine. Click here to watch along: https://www.youtube.com/watch?v=dQw4w9WgXcQ";
 
             if (configuredPhoneNumber == null)
             {
@@ -26,7 +27,7 @@ namespace WatchMe.Services
             if (!MauiProgram.ISEMULATED)
             {
                 var smsM = SmsManager.Default;
-                smsM.SendTextMessage(configuredPhoneNumber, null, messageToSend, null, null);
+                smsM.SendTextMessage(configuredPhoneNumber, null, message, null, null);
             }
 #endif
         }
