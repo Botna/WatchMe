@@ -38,7 +38,7 @@ namespace WatchMe.Persistance
             }
             catch (Exception ex)
             {
-                ToastHelper.CreateToast("Issue uploading to SC");
+                await ToastHelper.CreateToast("Issue uploading to SC");
             }
         }
 

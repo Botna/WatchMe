@@ -55,6 +55,11 @@ public partial class SplitCameraRecordingPage : ContentPage
         cameraViewFront.Camera = frontCamera;
         cameraViewBack.Camera = backCamera;
 
+        await _orchestrationService.StartCameraPreviews();
+    }
+
+    private async void StartRecordingFromPreview(object sender, EventArgs e)
+    {
         await _orchestrationService.InitiateRecordingProcedure();
     }
 

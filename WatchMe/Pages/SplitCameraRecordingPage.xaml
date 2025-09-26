@@ -32,6 +32,14 @@
             Grid.Row="3"
             WidthRequest="300"
             HeightRequest="300"/>
+        <Button
+  Text="Start Recording" 
+  AutomationId="SplitCameraView_StartRecordingBtn"
+  SemanticProperties.Hint="Starts Recording from the camera previews"
+  Clicked="StartRecordingFromPreview"
+  HorizontalOptions="Fill" />
 
     </Grid>
+
+    
 </ContentPage>

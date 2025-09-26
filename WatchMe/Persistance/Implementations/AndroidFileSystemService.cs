@@ -38,6 +38,46 @@ namespace WatchMe.Persistance.Implementations
 
         public override FileStream GetFileStreamOfFile(string fullFilePath) =>
             new FileStream(fullFilePath, FileMode.Open);
+
+        public override async Task<bool> SaveImageStreamToFile(Stream imageStream, string folderPath)
+        {
+            //this is succesfully saving video to cache directory most likely
+
+            //string uniqueFileName = $"Test_{DateTime.Now:yy_MM_dd_HH_mm_ss}.jpg";
+            //string filePath = Path.Combine(FileSystem.Current.CacheDirectory, uniqueFileName);
+            //if (!string.IsNullOrEmpty(folderPath))
+            //{
+            //    using (var newFileStream = File.OpenWrite(filePath))
+            //    {
+            //        await imageStream.CopyToAsync(newFileStream);
+            //    }
+            //}
+
+            //return true;
+            var context = Platform.CurrentActivity;
+            var resolver = context.ContentResolver;
+            var contentValues = new ContentValues();
+            contentValues.Put(MediaStore.IMediaColumns.DisplayName, "myFirstTestPhoto");
+            contentValues.Put(MediaStore.Files.IFileColumns.MimeType, "image/png");
+            contentValues.Put(MediaStore.IMediaColumns.RelativePath, "Pictures/WatchMe");
+            try
+            {
+                var uri = resolver.Insert(MediaStore.Images.Media.ExternalContentUri, contentValues);
+                var output = resolver.OpenOutputStream(uri);
+                imageStream.CopyTo(output);
+                output.Flush();
+                output.Close();
+            }
+            catch (System.Exception ex)
+            {
+                Console.Write(ex.ToString());
+                return false;
+            }
+            contentValues.Put(MediaStore.IMediaColumns.IsPending, 1);
+            return true;
+
+
+        }
     }
 }
 #endif

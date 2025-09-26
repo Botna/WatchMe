@@ -1,4 +1,5 @@
 ﻿using Microsoft.Maui.Handlers;
+
 #if IOS || MACCATALYST
 
 using PlatformView = WatchMe.Camera.Platforms.Apple.MauiCameraView;
@@ -99,6 +100,30 @@ internal partial class CameraViewHandler : ViewHandler<CameraView, PlatformView>
 #endif
         }
         return Task.Run(() => { return CameraResult.AccessError; });
+    }
+
+    //    public Task<CameraResult> StopRecordingAndRestart(string file)
+    //    {
+    //        if (PlatformView != null)
+    //        {
+    //#if ANDROID
+    //            return PlatformView.StopRecordingAndRestart(file);
+    //#endif
+    //        }
+    //        return Task.Run(() => { return CameraResult.AccessError; });
+    //    }
+
+    public Task<Stream> TakePhotoAsync(ImageFormat imageFormat)
+    {
+        if (PlatformView != null)
+        {
+#if  IOS || MACCATALYST || WINDOWS
+            return PlatformView.TakePhotoAsync(imageFormat);
+#elif ANDROID
+            return Task.Run(() => { return PlatformView.TakePhotoAsync(imageFormat); });
+#endif
+        }
+        return Task.Run(() => { Stream result = null; return result; });
     }
     public Task<CameraResult> StopRecordingAsync()
     {

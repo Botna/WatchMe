@@ -14,5 +14,7 @@ namespace WatchMe.Persistance.Implementations
         //FileSystem.Current.* doesnt work in unit tests, so must be mockable.
         public string BuildCacheFileDirectory(string fileName) =>
             Path.Combine(FileSystem.Current.CacheDirectory, fileName);
+
+        public abstract Task<bool> SaveImageStreamToFile(Stream imageStream, string filePath);
     }
 }

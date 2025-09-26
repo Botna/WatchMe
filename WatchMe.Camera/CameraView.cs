@@ -29,7 +29,7 @@ public class CameraView : View, ICameraView
     public static readonly BindableProperty ZoomFactorProperty = BindableProperty.Create(nameof(ZoomFactor), typeof(float), typeof(CameraView), 1f);
     public static readonly BindableProperty AutoStartPreviewProperty = BindableProperty.Create(nameof(AutoStartPreview), typeof(bool), typeof(CameraView), false, propertyChanged: AutoStartPreviewChanged);
     public static readonly BindableProperty AutoRecordingFileProperty = BindableProperty.Create(nameof(AutoRecordingFile), typeof(string), typeof(CameraView), string.Empty);
-    public static readonly BindableProperty AutoStartRecordingProperty = BindableProperty.Create(nameof(AutoStartRecording), typeof(bool), typeof(CameraView), false, propertyChanged: AutoStartRecordingChanged);
+    //public static readonly BindableProperty AutoStartRecordingProperty = BindableProperty.Create(nameof(AutoStartRecording), typeof(bool), typeof(CameraView), false, propertyChanged: AutoStartRecordingChanged);
 
     /// <summary>
     /// Binding property for use this control in MVVM.
@@ -163,14 +163,16 @@ public class CameraView : View, ICameraView
         get { return (string)GetValue(AutoRecordingFileProperty); }
         set { SetValue(AutoRecordingFileProperty, value); }
     }
-    /// <summary>
-    /// Starts/Stops record video to AutoRecordingFile if camera and microphone properties have been set
-    /// </summary>
-    public bool AutoStartRecording
-    {
-        get { return (bool)GetValue(AutoStartRecordingProperty); }
-        set { SetValue(AutoStartRecordingProperty, value); }
-    }
+
+    ///// <summary>
+    ///// Starts/Stops record video to AutoRecordingFile if camera and microphone properties have been set
+    ///// </summary>
+    //public bool AutoStartRecording
+    //{
+    //    get { return (bool)GetValue(AutoStartRecordingProperty); }
+    //    set { SetValue(AutoStartRecordingProperty, value); }
+    //}
+
     /// <summary>
     /// Event launched when "Cameras" property has been loaded.
     /// </summary>
@@ -226,23 +228,32 @@ public class CameraView : View, ICameraView
 
         }
     }
-    private static async void AutoStartRecordingChanged(BindableObject bindable, object oldValue, object newValue)
-    {
-        if (oldValue != newValue && bindable is CameraView control)
-        {
-            try
-            {
-                if ((bool)newValue)
-                {
-                    if (!string.IsNullOrEmpty(control.AutoRecordingFile))
-                        await control.StartRecordingAsync(control.AutoRecordingFile);
-                }
-                else
-                    await control.StopRecordingAsync();
-            }
-            catch { }
 
+    /// <summary>
+    /// Stop recording on the current camera device and restart it.
+    /// </summary>
+    //public async Task<CameraResult> StopRecordingAndRestartAsync(string file)
+    //{
+    //    CameraResult result = CameraResult.AccessError;
+    //    if (Handler != null && Handler is CameraViewHandler handler)
+    //    {
+    //        result = await handler.StopRecordingAndRestart(file);
+    //    }
+    //    return result;
+    //}
+
+    /// <summary>
+    /// Takes a photo from the camera selected.
+    /// </summary>
+    /// <param name="imageFormat">The capture image format</param>
+    /// <returns>A stream with the photo info</returns>
+    public async Task<Stream> TakePhotoAsync(ImageFormat imageFormat = ImageFormat.JPEG)
+    {
+        if (Handler != null && Handler is CameraViewHandler handler)
+        {
+            return await handler.TakePhotoAsync(imageFormat);
         }
+        return null;
     }
 
     /// <summary>
