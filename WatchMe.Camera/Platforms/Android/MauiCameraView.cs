@@ -17,6 +17,7 @@ using RectF = Android.Graphics.RectF;
 using Size = Android.Util.Size;
 using SizeF = Android.Util.SizeF;
 
+
 namespace WatchMe.Camera.Platforms.Android;
 
 internal class MauiCameraView : GridLayout
@@ -388,6 +389,61 @@ internal class MauiCameraView : GridLayout
         System.Diagnostics.Debug.WriteLine(" StopRecordingAsync - End");
         System.Diagnostics.Debug.WriteLine("*****************************************");
         return task;
+    }
+
+    internal bool SaveSnapShot(ImageFormat imageFormat, string SnapFilePath)
+    {
+        bool result = true;
+
+        if (started && !snapping)
+        {
+            snapping = true;
+            Bitmap bitmap = TakeSnap();
+            if (bitmap != null)
+            {
+                if (File.Exists(SnapFilePath)) File.Delete(SnapFilePath);
+                var iformat = imageFormat switch
+                {
+                    ImageFormat.JPEG => Bitmap.CompressFormat.Jpeg,
+                    _ => Bitmap.CompressFormat.Png
+                };
+                using FileStream stream = new(SnapFilePath, FileMode.OpenOrCreate);
+                bitmap.Compress(iformat, 80, stream);
+                stream.Close();
+            }
+            snapping = false;
+        }
+        else
+            result = false;
+
+        return result;
+    }
+
+    private Bitmap TakeSnap()
+    {
+        Bitmap bitmap = null;
+        try
+        {
+            MainThread.InvokeOnMainThreadAsync(() => { bitmap = textureView.GetBitmap(null); bitmap = textureView.Bitmap; }).Wait();
+            if (bitmap != null)
+            {
+                int oriWidth = bitmap.Width;
+                int oriHeight = bitmap.Height;
+
+                bitmap = Bitmap.CreateBitmap(bitmap, 0, 0, bitmap.Width, bitmap.Height, textureView.GetTransform(null), false);
+                float xscale = (float)oriWidth / bitmap.Width;
+                float yscale = (float)oriHeight / bitmap.Height;
+                bitmap = Bitmap.CreateBitmap(bitmap, (bitmap.Width - Width) / 2, (bitmap.Height - Height) / 2, Width, Height);
+                if (textureView.ScaleX == -1)
+                {
+                    Matrix matrix = new();
+                    matrix.PreScale(-1, 1);
+                    bitmap = Bitmap.CreateBitmap(bitmap, 0, 0, bitmap.Width, bitmap.Height, matrix, false);
+                }
+            }
+        }
+        catch { }
+        return bitmap;
     }
 
     internal async Task<System.IO.Stream> TakePhotoAsync(ImageFormat imageFormat)

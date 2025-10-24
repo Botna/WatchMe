@@ -101,18 +101,20 @@ internal partial class CameraViewHandler : ViewHandler<CameraView, PlatformView>
         }
         return Task.Run(() => { return CameraResult.AccessError; });
     }
-
-    //    public Task<CameraResult> StopRecordingAndRestart(string file)
-    //    {
-    //        if (PlatformView != null)
-    //        {
-    //#if ANDROID
-    //            return PlatformView.StopRecordingAndRestart(file);
-    //#endif
-    //        }
-    //        return Task.Run(() => { return CameraResult.AccessError; });
-    //    }
-
+    public Task<bool> SaveSnapShot(ImageFormat imageFormat, string SnapFilePath)
+    {
+        if (PlatformView != null)
+        {
+#if WINDOWS
+            return PlatformView.SaveSnapShot(imageFormat, SnapFilePath);
+#elif ANDROID 
+            var task = new Task<bool>(() => { return PlatformView.SaveSnapShot(imageFormat, SnapFilePath); });
+            task.Start();
+            return task;
+#endif
+        }
+        return Task.Run(() => { return false; });
+    }
     public Task<Stream> TakePhotoAsync(ImageFormat imageFormat)
     {
         if (PlatformView != null)

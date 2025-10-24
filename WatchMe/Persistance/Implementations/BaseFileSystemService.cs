@@ -15,6 +15,6 @@ namespace WatchMe.Persistance.Implementations
         public string BuildCacheFileDirectory(string fileName) =>
             Path.Combine(FileSystem.Current.CacheDirectory, fileName);
 
-        public abstract Task<bool> SaveImageStreamToFile(Stream imageStream, string filePath);
+        public abstract Task<bool> SaveImageStreamToFile(Stream imageStream, string filename);
     }
 }

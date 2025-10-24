@@ -13,7 +13,7 @@ namespace WatchMe.Extensions
 #endif
 
 #if IOS
-            builder.Services.AddTransient<IFileSystemService, IOSFileSystemService>();
+            //builder.Services.AddTransient<IFileSystemService, IOSFileSystemService>();
 #endif
         }
     }

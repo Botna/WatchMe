@@ -39,7 +39,7 @@ namespace WatchMe.Persistance.Implementations
         public override FileStream GetFileStreamOfFile(string fullFilePath) =>
             new FileStream(fullFilePath, FileMode.Open);
 
-        public override async Task<bool> SaveImageStreamToFile(Stream imageStream, string folderPath)
+        public override async Task<bool> SaveImageStreamToFile(Stream imageStream, string filename)
         {
             //this is succesfully saving video to cache directory most likely
 
@@ -57,7 +57,7 @@ namespace WatchMe.Persistance.Implementations
             var context = Platform.CurrentActivity;
             var resolver = context.ContentResolver;
             var contentValues = new ContentValues();
-            contentValues.Put(MediaStore.IMediaColumns.DisplayName, "myFirstTestPhoto");
+            contentValues.Put(MediaStore.IMediaColumns.DisplayName, filename);
             contentValues.Put(MediaStore.Files.IFileColumns.MimeType, "image/png");
             contentValues.Put(MediaStore.IMediaColumns.RelativePath, "Pictures/WatchMe");
             try

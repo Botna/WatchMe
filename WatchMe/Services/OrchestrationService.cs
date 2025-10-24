@@ -1,4 +1,5 @@
-﻿using WatchMe.Camera;
+﻿using System.Diagnostics;
+using WatchMe.Camera;
 using WatchMe.Persistance;
 using WatchMe.Repository;
 
@@ -49,15 +50,15 @@ namespace WatchMe.Services
                 return;
             }
 
-            _frontVideoFileName = $"Front_{_videoTimeStamp}";
-            var currentFrontVideoFileName = $"{_frontVideoFileName}_{_vidCount}";
-            _backVideoFileName = $"Back_{_videoTimeStamp}";
-            var currentBackVideoFileName = $"{_backVideoFileName}_{_vidCount}";
+            //_frontVideoFileName = $"Front_{_videoTimeStamp}";
+            //var currentFrontVideoFileName = $"{_frontVideoFileName}_{_vidCount}";
+            //_backVideoFileName = $"Back_{_videoTimeStamp}";
+            //var currentBackVideoFileName = $"{_backVideoFileName}_{_vidCount}";
 
             //await _notificationService.SendTextToConfiguredContact();
 
-            await _frontCameraView.StartCameraAsync();
-            //await _backCameraView.StartCameraAsync();
+            await _frontCameraView.StartCameraAsync(new Size(1280, 720));
+            await _backCameraView.StartCameraAsync(new Size(1280, 720));
 
 
 
@@ -75,25 +76,80 @@ namespace WatchMe.Services
 
             //var autoEvent = new AutoResetEvent(false);
             //var timerCallback = new TimerCallback(ReceiveTimerTick);
-            //_videoSplitterTimer = new Timer(timerCallback, autoEvent, 5000, 30000);
+            //_videoSplitterTimer = new Timer(timerCallback, autoEvent, 45, 45);
 
         }
 
         public async Task InitiateRecordingProcedure()
         {
-            var stream = await _frontCameraView.TakePhotoAsync();
-            if (stream != null)
-            {
-                await _fileSystemService.SaveImageStreamToFile(stream, "asdf");
-            }
+
+            await _frontCameraView.SaveSnapShot(Camera.ImageFormat.JPEG, "some/path/file.jpg");
+
+            //var autoEvent = new AutoResetEvent(false);
+            //var timerCallback = new TimerCallback(ReceiveTimerTick);
+            //_videoSplitterTimer = new Timer(timerCallback, autoEvent, 45, 45);
+            //Recording = true;
+            //var stopwatch = new Stopwatch();
+
+            //stopwatch.Start();
+            //var counter = 1;
+            //while (Recording)
+            //{
+            //    while (stopwatch.ElapsedMilliseconds < 41)
+            //    {
+            //    }
+            //    var frontPicTask = Task.Run(async () =>
+            //    {
+            //        var stream = await _frontCameraView.TakePhotoAsync(Camera.ImageFormat.JPEG);
+            //        if (stream != null)
+            //        {
+            //            await _fileSystemService.SaveImageStreamToFile(stream, $"Front_{DateTime.Now:yy_MM_dd_HH_mm_ss}_{counter}");
+
+            //        }
+            //    });
+
+            //    var BackPicTask = Task.Run(async () =>
+            //    {
+            //        var stream = await _backCameraView.TakePhotoAsync(Camera.ImageFormat.JPEG);
+            //        if (stream != null)
+            //        {
+            //            await _fileSystemService.SaveImageStreamToFile(stream, $"Back_{DateTime.Now:yy_MM_dd_HH_mm_ss}_{counter}");
+
+            //        }
+            //    });
+            //    counter++;
+            //    stopwatch.Restart();
+            //}
+
         }
 
-        //private async void ReceiveTimerTick(object? objectDetails)
-        //{
-        //    Debug.WriteLine("******************** ReceivedTimerTick ********************");
-        //    Debug.WriteLine($"******************** {DateTime.Now.ToString("h:mm:ss.fff")} ********************");
-        //    await StopCurrentRecordingAndRestart();
-        //}
+        private async void ReceiveTimerTick(object? objectDetails)
+        {
+            Debug.WriteLine("******************** ReceivedTimerTick ********************");
+            Debug.WriteLine($"******************** ElapsedTime:  ********************");
+
+
+
+            //var frontPicTask = Task.Run(async () =>
+            //{
+            //    var stream = await _frontCameraView.TakePhotoAsync(Camera.ImageFormat.JPEG);
+            //    if (stream != null)
+            //    {
+            //_fileSystemService.SaveImageStreamToFile(stream, $"Front_{DateTime.Now:yy_MM_dd_HH_mm_ss}_{_vidCount}");
+            //    }
+            //});
+
+            //var BackPicTask = Task.Run(async () =>
+            //{
+            //    var stream = await _backCameraView.TakePhotoAsync(Camera.ImageFormat.JPEG);
+            //    if (stream != null)
+            //    {
+            //        _fileSystemService.SaveImageStreamToFile(stream, $"Back_{DateTime.Now:yy_MM_dd_HH_mm_ss}_{_vidCount}");
+            //    }
+            //});
+
+            //_vidCount++;
+        }
 
         public async Task StopRecordingProcedure()
         {

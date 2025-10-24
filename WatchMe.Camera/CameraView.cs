@@ -257,6 +257,22 @@ public class CameraView : View, ICameraView
     }
 
     /// <summary>
+    /// Saves a capture form the active camera playback in a file
+    /// </summary>
+    /// <param name="imageFormat">The capture image format</param>
+    /// <param name="SnapFilePath">Full path for the file</param>
+    public async Task<bool> SaveSnapShot(ImageFormat imageFormat, string SnapFilePath)
+    {
+        bool result = false;
+        if (Handler != null && Handler is CameraViewHandler handler)
+        {
+            result = await handler.SaveSnapShot(imageFormat, SnapFilePath);
+        }
+        return result;
+    }
+
+
+    /// <summary>
     /// Start playback of the selected camera async. "Camera" property must not be null.
     /// <paramref name="Resolution"/> Indicates the resolution for the preview and photos taken with TakePhotoAsync (must be in Camera.AvailableResolutions). If width or height is 0, max resolution will be taken.
     /// </summary>
