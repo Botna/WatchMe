@@ -16,6 +16,10 @@ namespace WatchMe.Services
         public readonly ICloudProviderService _cloudProviderService;
         public readonly IFileSystemService _fileSystemService;
         public readonly INotificationService _notificationService;
+        private Timer _videoSplitterTimer;
+        private int lastByteProcessed;
+        private int timerCount = 0;
+        private string _videoTimeStampSuffix;
         public OrchestrationService(ICloudProviderService cloudProviderService, IFileSystemService fileSystemService, INotificationService notificationService)
         {
             _cloudProviderService = cloudProviderService;
@@ -25,11 +29,16 @@ namespace WatchMe.Services
 
         public async Task InitiateRecordingProcedure(CameraView frontCameraView, CameraView backCameraView, string videoTimeStampSuffix)
         {
-            var message = "Andrew just started a WatchMe Routine. Click here to watch along: https://www.youtube.com/watch?v=dQw4w9WgXcQ";
-            await _notificationService.SendTextToConfiguredContact(message);
+            _videoTimeStampSuffix = videoTimeStampSuffix;
+            //var message = "Andrew just started a WatchMe Routine. Click here to watch along: https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+            //await _notificationService.SendTextToConfiguredContact(message);
 
-            await StartRecordingAsync(frontCameraView, _fileSystemService.BuildCacheFileDirectory($"Front_{videoTimeStampSuffix}.mp4"));
-            await StartRecordingAsync(backCameraView, _fileSystemService.BuildCacheFileDirectory($"Back_{videoTimeStampSuffix}.mp4"));
+            await StartRecordingAsync(frontCameraView, _fileSystemService.BuildCacheFileDirectory($"Front_{_videoTimeStampSuffix}.mp4"));
+            await StartRecordingAsync(backCameraView, _fileSystemService.BuildCacheFileDirectory($"Back_{_videoTimeStampSuffix}.mp4"));
+
+            var autoEvent = new AutoResetEvent(false);
+            var timerCallback = new TimerCallback(ReceiveTimerTick);
+            _videoSplitterTimer = new Timer(timerCallback, autoEvent, 5000, 100000);
         }
 
         //Todo, figure out how to remove public here
@@ -43,6 +52,16 @@ namespace WatchMe.Services
         public Task InitiateRecordingProcedure()
         {
             throw new NotImplementedException();
+        }
+
+        private async void ReceiveTimerTick(object? objectDetails)
+        {
+            var path = FileSystem.Current.CacheDirectory;
+            var baseFileName = $"Front_{_videoTimeStampSuffix}";
+            var videoBytes = await _fileSystemService.GetVideoBytesByFile(Path.Combine(path, $"{baseFileName}.mp4"));
+
+            _fileSystemService.SaveVideoToFileSystem(videoBytes, Path.Combine(path, $"{baseFileName}_{timerCount}.mp4"));
+            timerCount++;
         }
 
         public async Task ProcessSavedVideoFile(string filename, string path)
