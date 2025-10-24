@@ -6,14 +6,14 @@ namespace WatchMe.Helpers
     public static class ToastHelper
     {
 
-        public static Task CreateToast(string message, ToastDuration duration = ToastDuration.Long)
+        public static async Task CreateToast(string message, ToastDuration duration = ToastDuration.Long)
         {
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
             double fontSize = 14;
 
             var toast = Toast.Make(message, duration, fontSize);
 
-            return toast.Show(cancellationTokenSource.Token);
+            await toast.Show(cancellationTokenSource.Token);
         }
     }
 }

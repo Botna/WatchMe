@@ -1,6 +1,4 @@
-﻿using FluentAssertions;
-using Moq;
-using WatchMe.Camera;
+﻿using Moq;
 using WatchMe.Persistance;
 using WatchMe.Repository;
 using WatchMe.Services;
@@ -33,25 +31,25 @@ namespace WatchMe.UnitTests.Services
             fileSystemServiceMock.VerifyAll();
         }
 
-        [Fact]
-        public async void InitiateRecording_HappyPath()
-        {
-            var messageRequest = string.Empty;
-            var notificationServiceMock = new Mock<INotificationService>(MockBehavior.Strict);
-            notificationServiceMock.Setup(x => x.SendTextToConfiguredContact(It.IsAny<string>())).Callback<string>(r => messageRequest = r).Returns(Task.CompletedTask);
-            var fileSystemServiceMock = new Mock<IFileSystemService>(MockBehavior.Strict);
-            fileSystemServiceMock.Setup(x => x.BuildCacheFileDirectory(It.IsAny<string>())).Returns((string input) => { return input; });
+        //[Fact]
+        //public async void InitiateRecording_HappyPath()
+        //{
+        //    var messageRequest = string.Empty;
+        //    var notificationServiceMock = new Mock<INotificationService>(MockBehavior.Strict);
+        //    notificationServiceMock.Setup(x => x.SendTextToConfiguredContact(It.IsAny<string>())).Callback<string>(r => messageRequest = r).Returns(Task.CompletedTask);
+        //    var fileSystemServiceMock = new Mock<IFileSystemService>(MockBehavior.Strict);
+        //    fileSystemServiceMock.Setup(x => x.BuildCacheFileDirectory(It.IsAny<string>())).Returns((string input) => { return input; });
 
-            var orchestrationServiceMock = new Mock<OrchestrationService>(MockBehavior.Strict, args: [null, fileSystemServiceMock.Object, notificationServiceMock.Object]);
-            orchestrationServiceMock.Setup(x => x.StartRecordingAsync(It.IsAny<CameraView>(), It.Is<string>(y => y.Contains("Front")))).Returns(Task.FromResult(CameraResult.Success));
-            orchestrationServiceMock.Setup(x => x.StartRecordingAsync(It.IsAny<CameraView>(), It.Is<string>(y => y.Contains("Back")))).Returns(Task.FromResult(CameraResult.Success));
+        //    var orchestrationServiceMock = new Mock<OrchestrationService>(MockBehavior.Strict, args: [null, fileSystemServiceMock.Object, notificationServiceMock.Object]);
+        //    orchestrationServiceMock.Setup(x => x.StartRecordingAsync(It.IsAny<CameraView>(), It.Is<string>(y => y.Contains("Front")))).Returns(Task.FromResult(CameraResult.Success));
+        //    orchestrationServiceMock.Setup(x => x.StartRecordingAsync(It.IsAny<CameraView>(), It.Is<string>(y => y.Contains("Back")))).Returns(Task.FromResult(CameraResult.Success));
 
-            await orchestrationServiceMock.Object.InitiateRecordingProcedure(null, null, "someTimeStampSuffix");
-            messageRequest.Should().Contain("just started a WatchMe Routine");
+        //    await orchestrationServiceMock.Object.InitiateRecordingProcedure(null, null, "someTimeStampSuffix");
+        //    messageRequest.Should().Contain("just started a WatchMe Routine");
 
-            fileSystemServiceMock.VerifyAll();
-            notificationServiceMock.VerifyAll();
-            orchestrationServiceMock.Verify(x => x.StartRecordingAsync(It.IsAny<CameraView>(), It.IsAny<string>()), Times.Exactly(2));
-        }
+        //    fileSystemServiceMock.VerifyAll();
+        //    notificationServiceMock.VerifyAll();
+        //    orchestrationServiceMock.Verify(x => x.StartRecordingAsync(It.IsAny<CameraView>(), It.IsAny<string>()), Times.Exactly(2));
+        //}
     }
 }

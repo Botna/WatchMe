@@ -18,9 +18,9 @@ public partial class SplitCameraRecordingPage : ContentPage
         InitializeComponent();
         cameraViewBack.CamerasLoaded += CameraViewBack_CamerasLoaded;
         cameraViewFront.CamerasLoaded += CameraViewFront_CamerasLoaded;
-        _videoTimeStampSuffix = DateTime.UtcNow.ToString("yyyyMMddHHmmssffff");
 
         _orchestrationService = orchestrationService;
+        orchestrationService.Initialize(cameraViewFront, cameraViewBack);
     }
 
     public void CameraViewBack_CamerasLoaded(object sender, EventArgs e)
@@ -55,20 +55,16 @@ public partial class SplitCameraRecordingPage : ContentPage
         cameraViewFront.Camera = frontCamera;
         cameraViewBack.Camera = backCamera;
 
-        await _orchestrationService.InitiateRecordingProcedure(cameraViewFront, cameraViewBack, _videoTimeStampSuffix);
+        await _orchestrationService.StartCameraPreviews();
+    }
+
+    private async void StartRecordingFromPreview(object sender, EventArgs e)
+    {
+        await _orchestrationService.InitiateRecordingProcedure();
     }
 
     protected override async void OnNavigatingFrom(NavigatingFromEventArgs e)
     {
-        var frontFileName = $"Front_{_videoTimeStampSuffix}.mp4";
-        var backFileName = $"Back_{_videoTimeStampSuffix}.mp4";
-
-        var result = await cameraViewFront.StopCameraAsync();
-        result = await cameraViewBack.StopCameraAsync();
-
-        var backFileTask = _orchestrationService.ProcessSavedVideoFile(frontFileName, FileSystem.Current.CacheDirectory);
-        var frontFileTask = _orchestrationService.ProcessSavedVideoFile(backFileName, FileSystem.Current.CacheDirectory);
-
-        await Task.WhenAll(backFileTask, frontFileTask);
+        await _orchestrationService.StopRecordingProcedure();
     }
 }
