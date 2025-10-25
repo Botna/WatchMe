@@ -6,6 +6,8 @@
         FileStream GetFileStreamOfFile(string filePath);
         Task<byte[]?> GetVideoBytesByFile(string filePath);
 
+        Task<byte[]?> GetVideoBytesByFile(string filePath, int byteOffset);
+
         string BuildCacheFileDirectory(string fileName);
     }
 }

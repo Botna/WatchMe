@@ -17,7 +17,7 @@ namespace WatchMe.Services
         public readonly IFileSystemService _fileSystemService;
         public readonly INotificationService _notificationService;
         private Timer _videoSplitterTimer;
-        private int lastByteProcessed;
+        private int lastByteProcessed = 0;
         private int timerCount = 0;
         private string _videoTimeStampSuffix;
         public OrchestrationService(ICloudProviderService cloudProviderService, IFileSystemService fileSystemService, INotificationService notificationService)
@@ -38,7 +38,7 @@ namespace WatchMe.Services
 
             var autoEvent = new AutoResetEvent(false);
             var timerCallback = new TimerCallback(ReceiveTimerTick);
-            _videoSplitterTimer = new Timer(timerCallback, autoEvent, 5000, 100000);
+            _videoSplitterTimer = new Timer(timerCallback, autoEvent, 3000, 3000);
         }
 
         //Todo, figure out how to remove public here
@@ -58,9 +58,11 @@ namespace WatchMe.Services
         {
             var path = FileSystem.Current.CacheDirectory;
             var baseFileName = $"Front_{_videoTimeStampSuffix}";
-            var videoBytes = await _fileSystemService.GetVideoBytesByFile(Path.Combine(path, $"{baseFileName}.mp4"));
 
-            _fileSystemService.SaveVideoToFileSystem(videoBytes, Path.Combine(path, $"{baseFileName}_{timerCount}.mp4"));
+            var videoBytes = await _fileSystemService.GetVideoBytesByFile(Path.Combine(path, $"{baseFileName}.mp4"), lastByteProcessed);
+
+            lastByteProcessed += videoBytes.Count();
+            _fileSystemService.SaveVideoToFileSystem(videoBytes, $"chunked_{baseFileName}_{timerCount}.mp4");
             timerCount++;
         }
 
@@ -72,14 +74,14 @@ namespace WatchMe.Services
             {
                 throw new Exception("Video file couldn't be opened");
             }
-            _fileSystemService.SaveVideoToFileSystem(videoBytes, filename);
+            //_fileSystemService.SaveVideoToFileSystem(videoBytes, filename);
 
-            var videoFileStream = _fileSystemService.GetFileStreamOfFile(fullFilePath);
+            //var videoFileStream = _fileSystemService.GetFileStreamOfFile(fullFilePath);
 
-            if (!MauiProgram.ISEMULATED)
-            {
-                await _cloudProviderService.UploadContentToCloud(videoFileStream, filename);
-            }
+            //if (!MauiProgram.ISEMULATED)
+            //{
+            //    await _cloudProviderService.UploadContentToCloud(videoFileStream, filename);
+            //}
         }
     }
 }
