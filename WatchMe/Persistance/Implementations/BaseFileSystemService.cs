@@ -15,19 +15,12 @@ namespace WatchMe.Persistance.Implementations
         public string BuildCacheFileDirectory(string fileName) =>
             Path.Combine(FileSystem.Current.CacheDirectory, fileName);
 
-        public async Task<byte[]?> GetVideoBytesByFile(string filePath, int byteOffset)
+        public byte[]? GetVideoBytesByFile(string filePath, int byteOffset)
         {
             //Something is mad here, we aren't able to recombine these files together. 
 
             //Need to check hex values probably of very small broken apart files to make sure they are getting pushed backtogether correctly.
 
-
-            var adjustedByteOffset = byteOffset;
-            if (byteOffset > 0)
-            {
-                //we are on subsequent reads, meaning we have already read the byte we are seeking);
-                adjustedByteOffset++;
-            }
             using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
             {
 
@@ -36,7 +29,7 @@ namespace WatchMe.Persistance.Implementations
                 using (MemoryStream ms = new MemoryStream())
                 {
                     int bytesRead;
-                    fileStream.Seek(adjustedByteOffset, SeekOrigin.Begin);
+                    fileStream.Seek(byteOffset, SeekOrigin.Current);
                     while ((bytesRead = fileStream.Read(buffer, 0, buffer.Length)) > 0)
                     {
                         ms.Write(buffer, 0, bytesRead);
@@ -45,5 +38,35 @@ namespace WatchMe.Persistance.Implementations
                 }
             }
         }
+
+        //public byte[]? GetVideoBytesByFile(string filePath, int byteOffset, int numBytes)
+        //{
+        //    using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+        //    {
+
+        //        byte[] buffer = new byte[4096];
+
+        //        using (MemoryStream ms = new MemoryStream())
+        //        {
+        //            int bytesRead;
+        //            var totalBytes = 0;
+        //            fileStream.Seek(byteOffset, SeekOrigin.Current);
+
+        //            while (totalBytes < numBytes)
+        //            {
+        //                bytesRead = fileStream.Read(buffer, 0, buffer.Length);
+
+        //                ms.Write(buffer, 0, bytesRead);
+
+        //                if (bytesRead < 4096)
+        //                {
+        //                    break;
+        //                }
+        //                totalBytes += bytesRead;
+        //            }
+        //            return ms.ToArray();
+        //        }
+        //    }
+        //}
     }
 }
