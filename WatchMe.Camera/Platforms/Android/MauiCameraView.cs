@@ -200,7 +200,7 @@ internal class MauiCameraView : GridLayout
                         audioManager.Mode = Mode.Normal;
                         mediaRecorder.SetAudioSource(AudioSource.Mic);
                         mediaRecorder.SetVideoSource(VideoSource.Surface);
-                        mediaRecorder.SetOutputFormat(OutputFormat.Mpeg4);
+                        mediaRecorder.SetOutputFormat(OutputFormat.Mpeg2Ts);
                         mediaRecorder.SetOutputFile(file);
                         mediaRecorder.SetVideoEncodingBitRate(10000000);
                         mediaRecorder.SetVideoFrameRate(30);
@@ -210,7 +210,7 @@ internal class MauiCameraView : GridLayout
                             maxVideoSize = new((int)Resolution.Width, (int)Resolution.Height);
                         mediaRecorder.SetVideoSize(maxVideoSize.Width, maxVideoSize.Height);
 
-                        mediaRecorder.SetVideoEncoder(VideoEncoder.H264);
+                        mediaRecorder.SetVideoEncoder(VideoEncoder.Default);
                         mediaRecorder.SetAudioEncoder(AudioEncoder.Aac);
                         IWindowManager windowManager = context.GetSystemService(Context.WindowService).JavaCast<IWindowManager>();
                         int rotation = (int)windowManager.DefaultDisplay.Rotation;
