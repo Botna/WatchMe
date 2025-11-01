@@ -49,6 +49,8 @@ namespace WatchMe
             Debug.WriteLine("******************** hello ********************");
 
 #if DEBUG
+
+            ISEMULATED = true;
             builder.Logging.AddDebug();
             Debug.WriteLine("******************** hello ********************");
             Debug.WriteLine("******************** hello ********************");
