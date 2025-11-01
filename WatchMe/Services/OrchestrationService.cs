@@ -1,6 +1,5 @@
 ﻿using WatchMe.Camera;
 using WatchMe.Persistance;
-using WatchMe.Repository;
 
 namespace WatchMe.Services
 {

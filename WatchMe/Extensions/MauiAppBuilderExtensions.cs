@@ -1,9 +1,9 @@
-﻿using WatchMe.Persistance.Implementations;
-using WatchMe.Repository;
+﻿using WatchMe.Persistance;
+using WatchMe.Persistance.Implementations;
 
 namespace WatchMe.Extensions
 {
-    public static class MauiAppBuiderExtensions
+    public static class MauiAppBuilderExtensions
     {
         public static void AddPlatformSpecificDependancyInjection(this MauiAppBuilder builder)
         {

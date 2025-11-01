@@ -1,6 +1,5 @@
 ﻿using FluentAssertions;
-using WatchMe.Config;
-
+using WatchMe.Helpers;
 namespace UITests;
 
 // This is an example of tests that do not need anything platform specific

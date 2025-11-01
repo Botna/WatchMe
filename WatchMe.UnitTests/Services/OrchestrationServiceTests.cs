@@ -2,7 +2,6 @@
 using Moq;
 using WatchMe.Camera;
 using WatchMe.Persistance;
-using WatchMe.Repository;
 using WatchMe.Services;
 
 namespace WatchMe.UnitTests.Services

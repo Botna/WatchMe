@@ -8,7 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="**\*.cs" />
+    <Compile Include="AppiumServerHelper.cs" />
+    <Compile Include="AutomationConstants.cs" />
+    <Compile Include="BaseTest.cs" />
+    <Compile Include="MainPageTests.cs" />
+    <Compile Include="RecordingPageTests.cs" />
+    <Compile Include="SettingsPageTests.cs" />
   </ItemGroup>
 
   <ItemGroup>

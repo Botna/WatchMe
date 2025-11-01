@@ -1,7 +1,7 @@
 ﻿#if ANDROID
 using Android.Content;
 using Android.Provider;
-using WatchMe.Repository;
+
 
 namespace WatchMe.Persistance.Implementations
 {

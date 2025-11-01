@@ -1,4 +1,4 @@
-﻿namespace WatchMe.Repository
+﻿namespace WatchMe.Persistance
 {
     public interface IFileSystemService
     {

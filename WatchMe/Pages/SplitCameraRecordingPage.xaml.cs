@@ -1,15 +1,12 @@
-using Plugin.Maui.ScreenRecording;
 using System.Collections.Concurrent;
 using WatchMe.Camera;
 using WatchMe.Services;
 
-
-namespace WatchMe;
+namespace WatchMe.Pages;
 
 public partial class SplitCameraRecordingPage : ContentPage
 {
     private readonly string _videoTimeStampSuffix;
-    private readonly IScreenRecording _screenRecorder;
     private readonly ConcurrentBag<string> camerasLoaded = new ConcurrentBag<string>();
     private readonly IOrchestrationService _orchestrationService;
 

@@ -1,5 +1,5 @@
 ﻿using FluentAssertions;
-using WatchMe.Config;
+using WatchMe.Helpers;
 namespace UITests;
 
 public class MainPageTests : BaseTest

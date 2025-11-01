@@ -1,8 +1,9 @@
 ﻿
 #if ANDROID
 using Android.Telephony;
+using WatchMe;
+
 #endif
-using WatchMe.Config;
 using WatchMe.Helpers;
 
 namespace WatchMe.Services

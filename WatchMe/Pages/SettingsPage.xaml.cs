@@ -1,5 +1,4 @@
 using System.Text.RegularExpressions;
-using WatchMe.Config;
 using WatchMe.Helpers;
 using WatchMe.Persistance;
 

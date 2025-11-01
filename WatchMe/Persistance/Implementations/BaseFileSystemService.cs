@@ -1,6 +1,4 @@
-﻿using WatchMe.Repository;
-
-namespace WatchMe.Persistance.Implementations
+﻿namespace WatchMe.Persistance.Implementations
 {
     public abstract class BaseFileSystemService : IFileSystemService
     {

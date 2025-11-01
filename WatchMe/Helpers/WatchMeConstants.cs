@@ -1,4 +1,4 @@
-﻿namespace WatchMe.Config
+﻿namespace WatchMe.Helpers
 {
     public static class WatchMeConstants
     {
