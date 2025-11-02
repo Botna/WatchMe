@@ -18,9 +18,10 @@ public partial class SplitCameraRecordingPage : ContentPage
         InitializeComponent();
         cameraViewBack.CamerasLoaded += CameraViewBack_CamerasLoaded;
         cameraViewFront.CamerasLoaded += CameraViewFront_CamerasLoaded;
-        _videoTimeStampSuffix = DateTime.UtcNow.ToString("yyyyMMddHHmmssffff");
+        //_videoTimeStampSuffix = DateTime.UtcNow.ToString("yyyyMMddHHmmssffff");
 
         _orchestrationService = orchestrationService;
+        _orchestrationService.Initialize(cameraViewFront, cameraViewBack);
     }
 
     public void CameraViewBack_CamerasLoaded(object sender, EventArgs e)
@@ -55,20 +56,24 @@ public partial class SplitCameraRecordingPage : ContentPage
         cameraViewFront.Camera = frontCamera;
         cameraViewBack.Camera = backCamera;
 
-        await _orchestrationService.InitiateRecordingProcedure(cameraViewFront, cameraViewBack, _videoTimeStampSuffix);
+        await _orchestrationService.InitiateRecordingProcedure();
     }
 
     protected override async void OnNavigatingFrom(NavigatingFromEventArgs e)
     {
-        var frontFileName = $"Front_{_videoTimeStampSuffix}.mp4";
-        var backFileName = $"Back_{_videoTimeStampSuffix}.mp4";
+        await _orchestrationService.StopRecordingProcedure();
 
-        var result = await cameraViewFront.StopCameraAsync();
-        result = await cameraViewBack.StopCameraAsync();
 
-        var backFileTask = _orchestrationService.ProcessSavedVideoFile(frontFileName, FileSystem.Current.CacheDirectory);
-        var frontFileTask = _orchestrationService.ProcessSavedVideoFile(backFileName, FileSystem.Current.CacheDirectory);
 
-        await Task.WhenAll(backFileTask, frontFileTask);
+        //var frontFileName = $"Front_{_videoTimeStampSuffix}.mp4";
+        //var backFileName = $"Back_{_videoTimeStampSuffix}.mp4";
+
+        //var result = await cameraViewFront.StopCameraAsync();
+        ////result = await cameraViewBack.StopCameraAsync();
+
+        //var frontFileTask = _orchestrationService.ProcessSavedVideoFile(frontFileName, FileSystem.Current.CacheDirectory);
+        ////var backFileTask = _orchestrationService.ProcessSavedVideoFile(backFileName, FileSystem.Current.CacheDirectory);
+
+        //await Task.WhenAll(/*backFileTask,*/ frontFileTask);
     }
 }
