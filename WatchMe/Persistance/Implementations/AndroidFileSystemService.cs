@@ -1,7 +1,6 @@
 ﻿#if ANDROID
 using Android.Content;
 using Android.Provider;
-using WatchMe.Repository;
 
 namespace WatchMe.Persistance.Implementations
 {
@@ -14,7 +13,8 @@ namespace WatchMe.Persistance.Implementations
             var resolver = context.ContentResolver;
             var contentValues = new ContentValues();
             contentValues.Put(MediaStore.IMediaColumns.DisplayName, fileName);
-            contentValues.Put(MediaStore.Files.IFileColumns.MimeType, "video/mp4");
+            //contentValues.Put(MediaStore.Files.IFileColumns.MimeType, "video/mp4");
+            contentValues.Put(MediaStore.Files.IFileColumns.MimeType, "video/mp2t");
             contentValues.Put(MediaStore.IMediaColumns.RelativePath, "DCIM/WatchMeVideoCaptures");
             try
             {

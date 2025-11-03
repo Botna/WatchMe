@@ -39,17 +39,13 @@ namespace WatchMe
             builder.Services.AddTransient<INotificationService, NotificationService>();
 
 
-            if (DeviceInfo.Name == "ui_automation_emulator")
-            {
-                ISEMULATED = true;
-            }
+
             Debug.WriteLine("******************** hello ********************");
             Debug.WriteLine("******************** hello ********************");
             Debug.WriteLine("******************** hello ********************");
             Debug.WriteLine("******************** hello ********************");
 
 #if DEBUG
-
             ISEMULATED = true;
             builder.Logging.AddDebug();
             Debug.WriteLine("******************** hello ********************");
