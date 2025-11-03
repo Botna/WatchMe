@@ -53,8 +53,8 @@ namespace WatchMe.Services
                 await _notificationService.SendTextToConfiguredContact(message);
             }
 
-            await StartRecordingAsync(_frontCameraView, _fileSystemService.BuildCacheFileDirectory($"{_frontVideoFileName}.mp4"));
-            await StartRecordingAsync(_backCameraView, _fileSystemService.BuildCacheFileDirectory($"{_backVideoFileName}.mp4"));
+            await StartRecordingAsync(_frontCameraView, _fileSystemService.BuildCacheFileDirectory($"{_frontVideoFileName}"));
+            await StartRecordingAsync(_backCameraView, _fileSystemService.BuildCacheFileDirectory($"{_backVideoFileName}"));
 
             //For now, we read in however many bytes are new and available every 3 seconds, and kick it off the phone.
             //TODO - Handle in background process, and figure out a cleaner way to do this without dual upload.
@@ -66,8 +66,16 @@ namespace WatchMe.Services
         private Task<CameraResult> StartRecordingAsync(CameraView cameraView, string path)
         {
             var sizes = cameraView.Camera.AvailableResolutions;
-
-            return cameraView.StartRecordingAsync(path, FindSmallestSize(sizes));
+            Size sizeToUse;
+            if (MauiProgram.ISEMULATED)
+            {
+                sizeToUse = FindSmallestSize(sizes);
+            }
+            else
+            {
+                sizeToUse = sizes.First(x => x.Width == 1920 && x.Height == 1080);
+            }
+            return cameraView.StartRecordingAsync(path, sizeToUse);
         }
 
         private Size FindSmallestSize(List<Size> sizes)
@@ -80,48 +88,38 @@ namespace WatchMe.Services
 
             //NOT THREADSAFE, will fail if video is being written at a certain speed.
 
-
-            //var frontPicTask = Task.Run(async () =>
+            //bool frontFinished = false;
+            //var currentFrontVideoBytes = _fileSystemService.GetVideoBytesByFile(Path.Combine(FileSystem.Current.CacheDirectory, $"{_frontVideoFileName}"), _frontVideoLastByteWritten);
+            //if (currentFrontVideoBytes.Length > 0)
             //{
-            //    var stream = await _frontCameraView.TakePhotoAsync(Camera.ImageFormat.JPEG);
-            //    if (stream != null)
-            //    {
-            //_fileSystemService.SaveImageStreamToFile(stream, $"Front_{DateTime.Now:yy_MM_dd_HH_mm_ss}_{_vidCount}");
-            //    }
-            //});
+            //    _frontVideoLastByteWritten += currentFrontVideoBytes.Count();
+            //    _fileSystemService.SaveVideoToFileSystem(currentFrontVideoBytes, $"chunked_{_frontVideoFileName}_{_timerCount}");
 
-            bool frontFinished = false;
-            var currentFrontVideoBytes = _fileSystemService.GetVideoBytesByFile(Path.Combine(FileSystem.Current.CacheDirectory, $"{_frontVideoFileName}.mp4"), _frontVideoLastByteWritten);
-            if (currentFrontVideoBytes.Length > 0)
-            {
-                _frontVideoLastByteWritten += currentFrontVideoBytes.Count();
-                _fileSystemService.SaveVideoToFileSystem(currentFrontVideoBytes, $"chunked_{_frontVideoFileName}_{_timerCount}.mp4");
+            //}
+            //else
+            //{
+            //    frontFinished = true;
+            //}
 
-            }
-            else
-            {
-                frontFinished = true;
-            }
+            //var backFinished = false;
+            //var currentBackVideoBytes = _fileSystemService.GetVideoBytesByFile(Path.Combine(FileSystem.Current.CacheDirectory, $"{_backVideoFileName}"), _backVideoLastByteWritten);
+            //if (currentFrontVideoBytes.Length > 0)
+            //{
+            //    _backVideoLastByteWritten += currentFrontVideoBytes.Count();
+            //    _fileSystemService.SaveVideoToFileSystem(currentFrontVideoBytes, $"chunked_{_backVideoFileName}_{_timerCount}");
 
-            var backFinished = false;
-            var currentBackVideoBytes = _fileSystemService.GetVideoBytesByFile(Path.Combine(FileSystem.Current.CacheDirectory, $"{_backVideoFileName}.mp4"), _backVideoLastByteWritten);
-            if (currentFrontVideoBytes.Length > 0)
-            {
-                _backVideoLastByteWritten += currentFrontVideoBytes.Count();
-                _fileSystemService.SaveVideoToFileSystem(currentFrontVideoBytes, $"chunked_{_backVideoFileName}_{_timerCount}.mp4");
-
-            }
-            else
-            {
-                backFinished = true;
-            }
+            //}
+            //else
+            //{
+            //    backFinished = true;
+            //}
 
 
-            if (frontFinished && backFinished)
-            {
-                _videoSplitterTimer.Dispose();
-            }
-            _timerCount++;
+            //if (frontFinished && backFinished)
+            //{
+            //    _videoSplitterTimer.Dispose();
+            //}
+            //_timerCount++;
         }
 
         public async Task ProcessSavedVideoFile(string filename, string path)
@@ -150,7 +148,7 @@ namespace WatchMe.Services
             //{
             //    var videoBytes = _fileSystemService.GetVideoBytesByFile(fullFilePath, currentByte, bytesSize);
             //    currentByte += videoBytes.Count();
-            //    _fileSystemService.SaveVideoToFileSystem(videoBytes, $"chunked_{count}.mp4");
+            //    _fileSystemService.SaveVideoToFileSystem(videoBytes, $"chunked_{count}.ts");
             //    count++;
             //}
         }
@@ -165,10 +163,10 @@ namespace WatchMe.Services
             var backCameraStopTask = _backCameraView.StopCameraAsync();
 
             await frontCameraStopTask;
-            var backVideoProcessingTask = ProcessSavedVideoFile($"{_backVideoFileName}.mp4", FileSystem.Current.CacheDirectory);
+            var backVideoProcessingTask = ProcessSavedVideoFile($"{_backVideoFileName}", FileSystem.Current.CacheDirectory);
 
             await backCameraStopTask;
-            var frontVideoProcessingTask = ProcessSavedVideoFile($"{_frontVideoFileName}.mp4", FileSystem.Current.CacheDirectory);
+            var frontVideoProcessingTask = ProcessSavedVideoFile($"{_frontVideoFileName}", FileSystem.Current.CacheDirectory);
 
             await Task.WhenAll(backVideoProcessingTask, frontVideoProcessingTask);
         }
