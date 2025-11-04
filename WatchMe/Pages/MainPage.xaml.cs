@@ -3,9 +3,8 @@ using WatchMe.Helpers;
 using WatchMe.Pages;
 using WatchMe.Persistance;
 
+
 #if ANDROID
-using Android.App;
-using Android.Net.Wifi;
 #endif
 
 

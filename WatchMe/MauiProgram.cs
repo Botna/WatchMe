@@ -6,6 +6,7 @@ using WatchMe.Camera;
 using WatchMe.Extensions;
 using WatchMe.Pages;
 using WatchMe.Persistance;
+using WatchMe.Persistance.Sqlite;
 using WatchMe.Services;
 
 namespace WatchMe
@@ -33,6 +34,8 @@ namespace WatchMe
             builder.Services.AddSingleton<MainPage>();
             builder.Services.AddTransient<SplitCameraRecordingPage>();
             builder.Services.AddTransient<SettingsPage>();
+            builder.Services.AddTransient<VideosRepository>();
+            builder.Services.AddTransient<VideoChunksRepository>();
 
             builder.Services.AddTransient<IOrchestrationService, OrchestrationService>();
             builder.Services.AddTransient<ICloudProviderService, CloudProviderService>();

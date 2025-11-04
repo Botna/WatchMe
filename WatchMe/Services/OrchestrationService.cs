@@ -1,5 +1,7 @@
 ﻿using WatchMe.Camera;
 using WatchMe.Persistance;
+using WatchMe.Persistance.Sqlite;
+using WatchMe.Persistance.Sqlite.Tables;
 using WatchMe.Repository;
 
 namespace WatchMe.Services
@@ -15,9 +17,10 @@ namespace WatchMe.Services
 
     public class OrchestrationService : IOrchestrationService
     {
-        public readonly ICloudProviderService _cloudProviderService;
-        public readonly IFileSystemService _fileSystemService;
-        public readonly INotificationService _notificationService;
+        private readonly ICloudProviderService _cloudProviderService;
+        private readonly IFileSystemService _fileSystemService;
+        private readonly INotificationService _notificationService;
+        private readonly VideosRepository _videosRepository;
 
         private CameraView _frontCameraView;
         private CameraView _backCameraView;
@@ -28,11 +31,12 @@ namespace WatchMe.Services
         private int _backVideoLastByteWritten;
         private Timer _videoSplitterTimer;
         private int _timerCount = 0;
-        public OrchestrationService(ICloudProviderService cloudProviderService, IFileSystemService fileSystemService, INotificationService notificationService)
+        public OrchestrationService(ICloudProviderService cloudProviderService, IFileSystemService fileSystemService, INotificationService notificationService, VideosRepository videosRepository)
         {
             _cloudProviderService = cloudProviderService;
             _fileSystemService = fileSystemService;
             _notificationService = notificationService;
+            _videosRepository = videosRepository;
         }
 
         public void Initialize(CameraView front, CameraView back)
@@ -53,8 +57,9 @@ namespace WatchMe.Services
                 await _notificationService.SendTextToConfiguredContact(message);
             }
 
-            await StartRecordingAsync(_frontCameraView, _fileSystemService.BuildCacheFileDirectory($"{_frontVideoFileName}"));
-            await StartRecordingAsync(_backCameraView, _fileSystemService.BuildCacheFileDirectory($"{_backVideoFileName}"));
+            var allItems = await _videosRepository.GetItemsAsync();
+            await StartRecordingAsync(_frontCameraView, _frontVideoFileName);
+            await StartRecordingAsync(_backCameraView, _backVideoFileName);
 
             //For now, we read in however many bytes are new and available every 3 seconds, and kick it off the phone.
             //TODO - Handle in background process, and figure out a cleaner way to do this without dual upload.
@@ -63,7 +68,7 @@ namespace WatchMe.Services
             _videoSplitterTimer = new Timer(timerCallback, autoEvent, 3000, 3000);
         }
 
-        private Task<CameraResult> StartRecordingAsync(CameraView cameraView, string path)
+        private async Task StartRecordingAsync(CameraView cameraView, string filename)
         {
             var sizes = cameraView.Camera.AvailableResolutions;
             Size sizeToUse;
@@ -75,7 +80,17 @@ namespace WatchMe.Services
             {
                 sizeToUse = sizes.First(x => x.Width == 1920 && x.Height == 1080);
             }
-            return cameraView.StartRecordingAsync(path, sizeToUse);
+
+
+            var path = _fileSystemService.BuildCacheFileDirectory(filename);
+            await cameraView.StartRecordingAsync(path, sizeToUse);
+
+            await _videosRepository.InsertItemsAsync(new Videos()
+            {
+                VideoName = filename,
+                VideoState = VideoStates.Recording.ToString(),
+                CreatedAt = DateTime.UtcNow
+            });
         }
 
         private Size FindSmallestSize(List<Size> sizes)
@@ -122,7 +137,7 @@ namespace WatchMe.Services
             //_timerCount++;
         }
 
-        public async Task ProcessSavedVideoFile(string filename, string path)
+        public async Task<int> ProcessSavedVideoFile(string filename, string path)
         {
             var fullFilePath = Path.Combine(path, filename);
             var totalVideoBytes = await _fileSystemService.GetVideoBytesByFile(fullFilePath);
@@ -140,6 +155,8 @@ namespace WatchMe.Services
                 var videoFileStream = _fileSystemService.GetFileStreamOfFile(fullFilePath);
                 await _cloudProviderService.UploadContentToCloud(videoFileStream, filename);
             }
+
+            return totalVideoBytes?.Length ?? 0;
 
             //var bytesSize = 40960;
             //var currentByte = 0;
@@ -163,12 +180,25 @@ namespace WatchMe.Services
             var backCameraStopTask = _backCameraView.StopCameraAsync();
 
             await frontCameraStopTask;
-            var backVideoProcessingTask = ProcessSavedVideoFile($"{_backVideoFileName}", FileSystem.Current.CacheDirectory);
+            var totalFrontVideoBytesTask = ProcessSavedVideoFile($"{_frontVideoFileName}", FileSystem.Current.CacheDirectory);
 
             await backCameraStopTask;
-            var frontVideoProcessingTask = ProcessSavedVideoFile($"{_frontVideoFileName}", FileSystem.Current.CacheDirectory);
+            var totalBackVideoBytesTask = ProcessSavedVideoFile($"{_backVideoFileName}", FileSystem.Current.CacheDirectory);
 
-            await Task.WhenAll(backVideoProcessingTask, frontVideoProcessingTask);
+            await Task.WhenAll(totalBackVideoBytesTask, totalFrontVideoBytesTask);
+
+            var frontVideo = await _videosRepository.GetVideosByVideoName(_frontVideoFileName);
+            frontVideo.TotalBytes = await totalFrontVideoBytesTask;
+            frontVideo.VideoState = VideoStates.Finished.ToString();
+
+            var backVideo = await _videosRepository.GetVideosByVideoName(_backVideoFileName);
+            backVideo.TotalBytes = await totalBackVideoBytesTask;
+            backVideo.VideoState = VideoStates.Finished.ToString();
+
+            var recordsUpdated = await _videosRepository.UpdateItemsAsync(frontVideo, backVideo);
+
+
+            var allItems = await _videosRepository.GetItemsAsync();
         }
     }
 }
