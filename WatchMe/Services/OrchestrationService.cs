@@ -9,10 +9,8 @@ namespace WatchMe.Services
     public interface IOrchestrationService
     {
         void Initialize(CameraView frontCameraView, CameraView backCameraView);
-        //Task ProcessSavedVideoFile(string filename, string path);
         Task InitiateRecordingProcedure();
         Task StopRecordingProcedure();
-        //Task InitiateRecordingProcedure(CameraView frontCameraView, CameraView backCameraView, string videoTimeStampSuffix);
     }
 
     public class OrchestrationService : IOrchestrationService
@@ -26,17 +24,18 @@ namespace WatchMe.Services
         private CameraView _backCameraView;
         private string _videoTimeStamp;
         private string _frontVideoFileName;
-        private int _frontVideoLastByteWritten;
         private string _backVideoFileName;
-        private int _backVideoLastByteWritten;
         private Timer _videoSplitterTimer;
-        private int _timerCount = 0;
-        public OrchestrationService(ICloudProviderService cloudProviderService, IFileSystemService fileSystemService, INotificationService notificationService, VideosRepository videosRepository)
+
+        public OrchestrationService(ICloudProviderService cloudProviderService, IFileSystemService fileSystemService, INotificationService notificationService, IDatabaseInitializer databaseInitializer,
+            VideosRepository videosRepository)
         {
             _cloudProviderService = cloudProviderService;
             _fileSystemService = fileSystemService;
             _notificationService = notificationService;
             _videosRepository = videosRepository;
+
+            databaseInitializer.Init();
         }
 
         public void Initialize(CameraView front, CameraView back)
@@ -61,17 +60,16 @@ namespace WatchMe.Services
             await StartRecordingAsync(_frontCameraView, _frontVideoFileName);
             await StartRecordingAsync(_backCameraView, _backVideoFileName);
 
-            //For now, we read in however many bytes are new and available every 3 seconds, and kick it off the phone.
-            //TODO - Handle in background process, and figure out a cleaner way to do this without dual upload.
-            var autoEvent = new AutoResetEvent(false);
-            var timerCallback = new TimerCallback(ReceiveTimerTick);
-            _videoSplitterTimer = new Timer(timerCallback, autoEvent, 3000, 3000);
+            //var autoEvent = new AutoResetEvent(false);
+            //var timerCallback = new TimerCallback(ReceiveTimerTick);
+            //_videoSplitterTimer = new Timer(timerCallback, autoEvent, 3000, 3000);
         }
 
         private async Task StartRecordingAsync(CameraView cameraView, string filename)
         {
             var sizes = cameraView.Camera.AvailableResolutions;
             Size sizeToUse;
+
             if (MauiProgram.ISEMULATED)
             {
                 sizeToUse = FindSmallestSize(sizes);
@@ -80,7 +78,6 @@ namespace WatchMe.Services
             {
                 sizeToUse = sizes.First(x => x.Width == 1920 && x.Height == 1080);
             }
-
 
             var path = _fileSystemService.BuildCacheFileDirectory(filename);
             await cameraView.StartRecordingAsync(path, sizeToUse);
@@ -157,20 +154,7 @@ namespace WatchMe.Services
             }
 
             return totalVideoBytes?.Length ?? 0;
-
-            //var bytesSize = 40960;
-            //var currentByte = 0;
-            //var count = 0;
-            //while (currentByte < totalVideoBytes.Count())
-            //{
-            //    var videoBytes = _fileSystemService.GetVideoBytesByFile(fullFilePath, currentByte, bytesSize);
-            //    currentByte += videoBytes.Count();
-            //    _fileSystemService.SaveVideoToFileSystem(videoBytes, $"chunked_{count}.ts");
-            //    count++;
-            //}
         }
-
-
 
         public async Task StopRecordingProcedure()
         {

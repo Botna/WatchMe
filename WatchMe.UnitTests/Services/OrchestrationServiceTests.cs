@@ -2,6 +2,7 @@
 using Moq;
 using WatchMe.Camera;
 using WatchMe.Persistance;
+using WatchMe.Persistance.Sqlite;
 using WatchMe.Repository;
 using WatchMe.Services;
 
@@ -12,7 +13,7 @@ namespace WatchMe.UnitTests.Services
         [Fact]
         public async void ProcessSavedVideoFile_HappyPath()
         {
-            var filename = "video.mp4";
+            var filename = "video.ts";
             var path = "some/path";
             var combinedPath = Path.Combine(path, filename);
             byte[]? videoBytes = new byte[10];
@@ -25,7 +26,13 @@ namespace WatchMe.UnitTests.Services
             var cloudProviderServiceMock = new Mock<ICloudProviderService>(MockBehavior.Strict);
             cloudProviderServiceMock.Setup(x => x.UploadContentToCloud(It.IsAny<FileStream>(), filename)).Returns(Task.CompletedTask);
 
-            var service = new OrchestrationService(cloudProviderServiceMock.Object, fileSystemServiceMock.Object, notificationService: null);
+            var databaseInitializerMock = new Mock<IDatabaseInitializer>();
+            databaseInitializerMock.Setup(x => x.Init());
+
+            var videosRepositoryMock = new Mock<VideosRepository>();
+
+            //Todo, setup mock over GetConnection for BaseSqlLiteRepositoryBase;
+            var service = new OrchestrationService(cloudProviderServiceMock.Object, fileSystemServiceMock.Object, notificationService: null, databaseInitializerMock.Object, videosRepositoryMock.Object);
 
             await service.ProcessSavedVideoFile(filename, path);
 
@@ -37,21 +44,33 @@ namespace WatchMe.UnitTests.Services
         public async void InitiateRecording_HappyPath()
         {
             var messageRequest = string.Empty;
+
+            var mockFrontCamera = new Mock<ICameraView>(MockBehavior.Strict);
+            var mockBackCamera = new Mock<ICameraView>(MockBehavior.Strict);
+
             var notificationServiceMock = new Mock<INotificationService>(MockBehavior.Strict);
             notificationServiceMock.Setup(x => x.SendTextToConfiguredContact(It.IsAny<string>())).Callback<string>(r => messageRequest = r).Returns(Task.CompletedTask);
             var fileSystemServiceMock = new Mock<IFileSystemService>(MockBehavior.Strict);
             fileSystemServiceMock.Setup(x => x.BuildCacheFileDirectory(It.IsAny<string>())).Returns((string input) => { return input; });
 
-            var orchestrationServiceMock = new Mock<OrchestrationService>(MockBehavior.Strict, args: [null, fileSystemServiceMock.Object, notificationServiceMock.Object]);
-            orchestrationServiceMock.Setup(x => x.StartRecordingAsync(It.IsAny<CameraView>(), It.Is<string>(y => y.Contains("Front")))).Returns(Task.FromResult(CameraResult.Success));
-            orchestrationServiceMock.Setup(x => x.StartRecordingAsync(It.IsAny<CameraView>(), It.Is<string>(y => y.Contains("Back")))).Returns(Task.FromResult(CameraResult.Success));
+            var cloudProviderServiceMock = new Mock<ICloudProviderService>(MockBehavior.Strict);
+            cloudProviderServiceMock.Setup(x => x.UploadContentToCloud(It.IsAny<FileStream>(), It.IsAny<string>())).Returns(Task.CompletedTask);
 
-            await orchestrationServiceMock.Object.InitiateRecordingProcedure(null, null, "someTimeStampSuffix");
+            var databaseInitializerMock = new Mock<IDatabaseInitializer>();
+            databaseInitializerMock.Setup(x => x.Init());
+
+            var videosRepositoryMock = new Mock<VideosRepository>();
+
+            var service = new OrchestrationService(cloudProviderServiceMock.Object, fileSystemServiceMock.Object, notificationServiceMock.Object, databaseInitializerMock.Object, videosRepositoryMock.Object);
+            await service.InitiateRecordingProcedure();
+            //var orchestrationServiceMock = new Mock<OrchestrationService>(MockBehavior.Strict, args: [null, fileSystemServiceMock.Object, notificationServiceMock.Object]);
+            //orchestrationServiceMock.Setup(x => x.InitiateRecordingProcedure()).Returns(Task.FromResult(CameraResult.Success));
+
+            //await orchestrationServiceMock.Object.InitiateRecordingProcedure(null, null, "someTimeStampSuffix");
             messageRequest.Should().Contain("just started a WatchMe Routine");
 
-            fileSystemServiceMock.VerifyAll();
-            notificationServiceMock.VerifyAll();
-            orchestrationServiceMock.Verify(x => x.StartRecordingAsync(It.IsAny<CameraView>(), It.IsAny<string>()), Times.Exactly(2));
+            await service.StopRecordingProcedure();
+
         }
     }
 }
