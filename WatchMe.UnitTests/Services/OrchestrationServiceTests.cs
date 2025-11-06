@@ -12,38 +12,6 @@ namespace WatchMe.UnitTests.Services
     public class OrchestrationServiceTests
     {
         [Fact]
-        public async void ProcessSavedVideoFile_HappyPath()
-        {
-            //var filename = "video.ts";
-            //var path = "some/path";
-            //var combinedPath = Path.Combine(path, filename);
-            //byte[]? videoBytes = new byte[10];
-
-
-            //var fileSystemServiceMock = new Mock<IFileSystemService>();
-            //fileSystemServiceMock.Setup(x => x.GetVideoBytesByFile(combinedPath)).Returns(Task.FromResult(videoBytes));
-            //fileSystemServiceMock.Setup(x => x.SaveVideoToFileSystem(videoBytes, filename)).Returns(true);
-            //fileSystemServiceMock.Setup(x => x.GetFileStreamOfFile(combinedPath));
-            //var cloudProviderServiceMock = new Mock<ICloudProviderService>(MockBehavior.Strict);
-            //cloudProviderServiceMock.Setup(x => x.UploadContentToCloud(It.IsAny<FileStream>(), filename)).Returns(Task.CompletedTask);
-
-            //var databaseInitializerMock = new Mock<IDatabaseInitializer>();
-            //databaseInitializerMock.Setup(x => x.Init());
-
-            //var videosRepositoryMock = new Mock<IVideosRepository>();
-
-            //var cameraWrapperMock = new Mock<ICameraWrapper>();
-
-            ////Todo, setup mock over GetConnection for BaseSqlLiteRepositoryBase;
-            //var service = new OrchestrationService(cloudProviderServiceMock.Object, fileSystemServiceMock.Object, notificationService: null, databaseInitializerMock.Object, videosRepositoryMock.Object, cameraWrapperMock.Object);
-
-            //await service.ProcessSavedVideoFile(filename, path);
-
-            //cloudProviderServiceMock.VerifyAll();
-            //fileSystemServiceMock.VerifyAll();
-        }
-
-        [Fact]
         public async void InitiateRecording_HappyPath()
         {
             var messageRequest = string.Empty;
