@@ -2,13 +2,9 @@
 {
     public interface IFileSystemService
     {
-        bool SaveVideoToFileSystem(byte[] videoBytes, string filePath);
+        Task<byte[]> MoveVideoToGallery(string fileName);
         FileStream GetFileStreamOfFile(string filePath);
-        Task<byte[]?> GetVideoBytesByFile(string filePath);
-
-        byte[]? GetVideoBytesByFile(string filePath, int byteOffset);
-
-        //byte[]? GetVideoBytesByFile(string filePath, int byteOffset, int numBytes);
+        Task<byte[]?> GetAllFileBytesFromCacheDirectory(string filePath);
         string BuildCacheFileDirectory(string fileName);
     }
 }

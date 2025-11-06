@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
 using Plugin.Maui.ScreenRecording;
-using System.Diagnostics;
 using WatchMe.Camera;
 using WatchMe.Extensions;
 using WatchMe.Pages;
@@ -34,35 +33,17 @@ namespace WatchMe
             builder.Services.AddSingleton<MainPage>();
             builder.Services.AddTransient<SplitCameraRecordingPage>();
             builder.Services.AddTransient<SettingsPage>();
-            builder.Services.AddTransient<VideosRepository>();
-            builder.Services.AddTransient<VideoChunksRepository>();
+            builder.Services.AddTransient<IVideosRepository, VideosRepository>();
+            builder.Services.AddTransient<IDatabaseInitializer, DatabaseInitializer>();
+            builder.Services.AddTransient<IVideoChunksRepository, VideoChunksRepository>();
 
             builder.Services.AddTransient<IOrchestrationService, OrchestrationService>();
             builder.Services.AddTransient<ICloudProviderService, CloudProviderService>();
             builder.Services.AddTransient<INotificationService, NotificationService>();
-
-
-
-            Debug.WriteLine("******************** hello ********************");
-            Debug.WriteLine("******************** hello ********************");
-            Debug.WriteLine("******************** hello ********************");
-            Debug.WriteLine("******************** hello ********************");
-
 #if DEBUG
             ISEMULATED = true;
             builder.Logging.AddDebug();
-            Debug.WriteLine("******************** hello ********************");
-            Debug.WriteLine("******************** hello ********************");
-            Debug.WriteLine("******************** hello ********************");
-            Debug.WriteLine("******************** hello ********************");
-            Debug.WriteLine("******************** hello ********************");
-            Debug.WriteLine("******************** hello ********************");
-            Debug.WriteLine("******************** hello ********************");
-            Debug.WriteLine("******************** hello ********************");
-            Debug.WriteLine("******************** hello ********************");
-            Debug.WriteLine("******************** hello ********************");
 #endif
-
             return builder.Build();
         }
     }

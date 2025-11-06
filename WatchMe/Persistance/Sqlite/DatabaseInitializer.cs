@@ -7,7 +7,7 @@ namespace WatchMe.Persistance.Sqlite
     {
         Task Init();
     }
-    public class DatabaseInitializer
+    public class DatabaseInitializer : IDatabaseInitializer
     {
         public async Task Init()
         {

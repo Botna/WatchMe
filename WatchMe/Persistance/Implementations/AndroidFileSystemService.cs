@@ -7,20 +7,26 @@ namespace WatchMe.Persistance.Implementations
     public class AndroidFileSystemService : BaseFileSystemService
     {
         public AndroidFileSystemService() { }
-        public override bool SaveVideoToFileSystem(byte[] videoBytes, string fileName)
+
+        public override async Task<byte[]> MoveVideoToGallery(string fileName)
         {
+            var bytes = await GetAllFileBytesFromCacheDirectory(fileName);
+            if (bytes?.Length == 0)
+            {
+                return bytes;
+            }
+
             var context = Platform.CurrentActivity;
             var resolver = context.ContentResolver;
             var contentValues = new ContentValues();
             contentValues.Put(MediaStore.IMediaColumns.DisplayName, fileName);
-            //contentValues.Put(MediaStore.Files.IFileColumns.MimeType, "video/mp4");
             contentValues.Put(MediaStore.Files.IFileColumns.MimeType, "video/mp2t");
             contentValues.Put(MediaStore.IMediaColumns.RelativePath, "DCIM/WatchMeVideoCaptures");
             try
             {
                 var videoUri = resolver.Insert(MediaStore.Video.Media.ExternalContentUri, contentValues);
                 var output = resolver.OpenOutputStream(videoUri);
-                output.Write(videoBytes, 0, videoBytes.Length);
+                output.Write(bytes, 0, bytes.Length);
                 output.Flush();
                 output.Close();
                 output.Dispose();
@@ -28,16 +34,21 @@ namespace WatchMe.Persistance.Implementations
             catch (Exception ex)
             {
                 Console.Write(ex.ToString());
-                return false;
+                return Array.Empty<byte>();
             }
 
-            //wahts this do?
-            //contentValues.Put(MediaStore.IMediaColumns.IsPending, 1);
-            return true;
+            //TODO clean up from Cache directory;
+
+            return bytes;
+
         }
 
-        public override FileStream GetFileStreamOfFile(string fullFilePath) =>
-            new FileStream(fullFilePath, FileMode.Open);
+        public override FileStream GetFileStreamOfFile(string fileName)
+        {
+            return new FileStream(BuildCacheFileDirectory(fileName), FileMode.Open);
+        }
+
+
     }
 }
 #endif

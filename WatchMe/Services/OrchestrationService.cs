@@ -18,22 +18,22 @@ namespace WatchMe.Services
         private readonly ICloudProviderService _cloudProviderService;
         private readonly IFileSystemService _fileSystemService;
         private readonly INotificationService _notificationService;
-        private readonly VideosRepository _videosRepository;
+        private readonly IVideosRepository _videosRepository;
+        private readonly ICameraWrapper _cameraWrapper;
 
-        private CameraView _frontCameraView;
-        private CameraView _backCameraView;
         private string _videoTimeStamp;
         private string _frontVideoFileName;
         private string _backVideoFileName;
         private Timer _videoSplitterTimer;
 
         public OrchestrationService(ICloudProviderService cloudProviderService, IFileSystemService fileSystemService, INotificationService notificationService, IDatabaseInitializer databaseInitializer,
-            VideosRepository videosRepository)
+            IVideosRepository videosRepository, ICameraWrapper cameraWrapper)
         {
             _cloudProviderService = cloudProviderService;
             _fileSystemService = fileSystemService;
             _notificationService = notificationService;
             _videosRepository = videosRepository;
+            _cameraWrapper = cameraWrapper;
 
             databaseInitializer.Init();
         }
@@ -41,8 +41,7 @@ namespace WatchMe.Services
         public void Initialize(CameraView front, CameraView back)
         {
             _videoTimeStamp = DateTime.UtcNow.ToString("yyyyMMddHHmmssffff");
-            _frontCameraView = front;
-            _backCameraView = back;
+            _cameraWrapper.Initialize(front, back);
 
             _frontVideoFileName = $"Front_{_videoTimeStamp}";
             _backVideoFileName = $"Back_{_videoTimeStamp}";
@@ -56,18 +55,17 @@ namespace WatchMe.Services
                 await _notificationService.SendTextToConfiguredContact(message);
             }
 
-            var allItems = await _videosRepository.GetItemsAsync();
-            await StartRecordingAsync(_frontCameraView, _frontVideoFileName);
-            await StartRecordingAsync(_backCameraView, _backVideoFileName);
+            await StartRecordingAsync(CameraPosition.Front, _frontVideoFileName);
+            await StartRecordingAsync(CameraPosition.Back, _backVideoFileName);
 
             //var autoEvent = new AutoResetEvent(false);
             //var timerCallback = new TimerCallback(ReceiveTimerTick);
             //_videoSplitterTimer = new Timer(timerCallback, autoEvent, 3000, 3000);
         }
 
-        private async Task StartRecordingAsync(CameraView cameraView, string filename)
+        private async Task StartRecordingAsync(CameraPosition position, string filename)
         {
-            var sizes = cameraView.Camera.AvailableResolutions;
+            var sizes = _cameraWrapper.GetAvailableResolutions(position);
             Size sizeToUse;
 
             if (MauiProgram.ISEMULATED)
@@ -80,9 +78,9 @@ namespace WatchMe.Services
             }
 
             var path = _fileSystemService.BuildCacheFileDirectory(filename);
-            await cameraView.StartRecordingAsync(path, sizeToUse);
+            await _cameraWrapper.StartRecordingAsync(position, path, sizeToUse);
 
-            await _videosRepository.InsertItemsAsync(new Videos()
+            await _videosRepository.InsertVideosAsync(new Videos()
             {
                 VideoName = filename,
                 VideoState = VideoStates.Recording.ToString(),
@@ -134,55 +132,43 @@ namespace WatchMe.Services
             //_timerCount++;
         }
 
-        public async Task<int> ProcessSavedVideoFile(string filename, string path)
-        {
-            var fullFilePath = Path.Combine(path, filename);
-            var totalVideoBytes = await _fileSystemService.GetVideoBytesByFile(fullFilePath);
-            if (totalVideoBytes == null)
-            {
-                throw new Exception("Video file couldn't be opened");
-            }
 
-
-            _fileSystemService.SaveVideoToFileSystem(totalVideoBytes, filename);
-
-
-            if (!MauiProgram.ISEMULATED)
-            {
-                var videoFileStream = _fileSystemService.GetFileStreamOfFile(fullFilePath);
-                await _cloudProviderService.UploadContentToCloud(videoFileStream, filename);
-            }
-
-            return totalVideoBytes?.Length ?? 0;
-        }
 
         public async Task StopRecordingProcedure()
         {
-            _videoSplitterTimer.Dispose();
+            //_videoSplitterTimer.Dispose();
 
-            var frontCameraStopTask = _frontCameraView.StopCameraAsync();
-            var backCameraStopTask = _backCameraView.StopCameraAsync();
-
-            await frontCameraStopTask;
-            var totalFrontVideoBytesTask = ProcessSavedVideoFile($"{_frontVideoFileName}", FileSystem.Current.CacheDirectory);
+            var frontCameraStopTask = _cameraWrapper.StopCameraAsync(CameraPosition.Front);
+            var backCameraStopTask = _cameraWrapper.StopCameraAsync(CameraPosition.Back);
 
             await backCameraStopTask;
-            var totalBackVideoBytesTask = ProcessSavedVideoFile($"{_backVideoFileName}", FileSystem.Current.CacheDirectory);
+            var backVideoBytesTask = _fileSystemService.MoveVideoToGallery(_backVideoFileName);
 
-            await Task.WhenAll(totalBackVideoBytesTask, totalFrontVideoBytesTask);
+            await frontCameraStopTask;
+            var frontVideoBytesTask = _fileSystemService.MoveVideoToGallery(_frontVideoFileName);
+
+            await Task.WhenAll(frontVideoBytesTask, backVideoBytesTask);
 
             var frontVideo = await _videosRepository.GetVideosByVideoName(_frontVideoFileName);
-            frontVideo.TotalBytes = await totalFrontVideoBytesTask;
+            frontVideo.TotalBytes = (await frontVideoBytesTask).Count();
             frontVideo.VideoState = VideoStates.Finished.ToString();
 
             var backVideo = await _videosRepository.GetVideosByVideoName(_backVideoFileName);
-            backVideo.TotalBytes = await totalBackVideoBytesTask;
+            backVideo.TotalBytes = (await backVideoBytesTask).Count();
             backVideo.VideoState = VideoStates.Finished.ToString();
 
-            var recordsUpdated = await _videosRepository.UpdateItemsAsync(frontVideo, backVideo);
+            var recordsUpdated = await _videosRepository.UpdateVideosAsync(frontVideo, backVideo);
 
+            if (!MauiProgram.ISEMULATED)
+            {
+                var frontVideoFileStream = _fileSystemService.GetFileStreamOfFile(_frontVideoFileName);
+                var frontUploadTask = _cloudProviderService.UploadContentToCloud(frontVideoFileStream, _frontVideoFileName);
 
-            var allItems = await _videosRepository.GetItemsAsync();
+                var backVideoFileStream = _fileSystemService.GetFileStreamOfFile(_backVideoFileName);
+                var backUploadTask = _cloudProviderService.UploadContentToCloud(backVideoFileStream, _backVideoFileName);
+
+                await Task.WhenAll();
+            }
         }
     }
 }
