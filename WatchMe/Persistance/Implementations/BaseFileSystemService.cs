@@ -4,7 +4,10 @@ namespace WatchMe.Persistance.Implementations
 {
     public abstract class BaseFileSystemService : IFileSystemService
     {
-        public abstract FileStream GetFileStreamOfFile(string filename);
+        public FileStream GetFileStreamOfFile(string fileName)
+        {
+            return new FileStream(BuildCacheFileDirectory(fileName), FileMode.Open);
+        }
 
         public abstract Task<byte[]> MoveVideoToGallery(string fileName);
 

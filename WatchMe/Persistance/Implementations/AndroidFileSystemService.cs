@@ -47,8 +47,6 @@ namespace WatchMe.Persistance.Implementations
         {
             return new FileStream(BuildCacheFileDirectory(fileName), FileMode.Open);
         }
-
-
     }
 }
 #endif
