@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net8.0-android</TargetFrameworks>
+		<TargetFrameworks>net8.0-android;net8.0</TargetFrameworks>
 		<!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
 		<!-- <TargetFrameworks>$(TargetFrameworks);net7.0-tizen</TargetFrameworks> -->
 		<UseMaui>true</UseMaui>
@@ -27,10 +27,6 @@
 		<PackageReleaseNotes>Split barcode encoder/decoder in a different package. Fix some bugs
 </PackageReleaseNotes>
 		<PackageLicenseFile>license.md</PackageLicenseFile>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(TargetFramework)'=='net7.0-ios'">
-	  <ProvisioningType>manual</ProvisioningType>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -63,9 +59,6 @@
 	    <Pack>True</Pack>
 	    <PackagePath>\</PackagePath>
 	  </EmbeddedResource>
-	</ItemGroup>
-
-	<ItemGroup Condition="'$(TargetFramework)' == 'net7.0-android'">
 	</ItemGroup>
 
 	<ItemGroup>

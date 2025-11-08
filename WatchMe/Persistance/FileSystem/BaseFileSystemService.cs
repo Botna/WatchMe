@@ -4,40 +4,42 @@ namespace WatchMe.Persistance.Implementations
 {
     public abstract class BaseFileSystemService : IFileSystemService
     {
-        public abstract FileStream GetFileStreamOfFile(string filename);
+        public FileStream GetFileStreamOfFile(string fileName)
+        {
+            return new FileStream(BuildCacheFileDirectory(fileName), FileMode.Open);
+        }
 
-        public abstract bool SaveVideoToFileSystem(byte[] videoBytes, string fileName);
+        public abstract Task<byte[]> MoveVideoToGallery(string fileName);
 
-        public async Task<byte[]?> GetVideoBytesByFile(string filePath) =>
-            await File.ReadAllBytesAsync(filePath);
+        public async Task<byte[]?> GetAllFileBytesFromCacheDirectory(string fileName)
+        {
+            return await File.ReadAllBytesAsync(BuildCacheFileDirectory(fileName));
+        }
 
-        //FileSystem.Current.* doesnt work in unit tests, so must be mockable.
         public string BuildCacheFileDirectory(string fileName) =>
             Path.Combine(FileSystem.Current.CacheDirectory, fileName);
 
-        public byte[]? GetVideoBytesByFile(string filePath, int byteOffset)
-        {
-            //Something is mad here, we aren't able to recombine these files together. 
+        #region GetBytesByChunk
+        //public byte[]? GetVideoBytesByFile(string filePath, int byteOffset)
+        //{
 
-            //Need to check hex values probably of very small broken apart files to make sure they are getting pushed backtogether correctly.
+        //    using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+        //    {
 
-            using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
-            {
+        //        byte[] buffer = new byte[4096];
 
-                byte[] buffer = new byte[4096];
-
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    int bytesRead;
-                    fileStream.Seek(byteOffset, SeekOrigin.Current);
-                    while ((bytesRead = fileStream.Read(buffer, 0, buffer.Length)) > 0)
-                    {
-                        ms.Write(buffer, 0, bytesRead);
-                    }
-                    return ms.ToArray();
-                }
-            }
-        }
+        //        using (MemoryStream ms = new MemoryStream())
+        //        {
+        //            int bytesRead;
+        //            fileStream.Seek(byteOffset, SeekOrigin.Current);
+        //            while ((bytesRead = fileStream.Read(buffer, 0, buffer.Length)) > 0)
+        //            {
+        //                ms.Write(buffer, 0, bytesRead);
+        //            }
+        //            return ms.ToArray();
+        //        }
+        //    }
+        //}
 
         //public byte[]? GetVideoBytesByFile(string filePath, int byteOffset, int numBytes)
         //{
@@ -68,5 +70,7 @@ namespace WatchMe.Persistance.Implementations
         //        }
         //    }
         //}
+
+        #endregion
     }
 }
