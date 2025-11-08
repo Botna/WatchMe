@@ -1,7 +1,7 @@
 ﻿using Azure.Storage.Blobs;
 using WatchMe.Helpers;
 
-namespace WatchMe.Persistance
+namespace WatchMe.Persistance.CloudProviders
 {
     public interface ICloudProviderService
     {

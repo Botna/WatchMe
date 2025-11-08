@@ -36,17 +36,10 @@ namespace WatchMe.Persistance.Implementations
                 Console.Write(ex.ToString());
                 return Array.Empty<byte>();
             }
-
-            //TODO clean up from Cache directory;
-
             return bytes;
-
         }
 
-        public override FileStream GetFileStreamOfFile(string fileName)
-        {
-            return new FileStream(BuildCacheFileDirectory(fileName), FileMode.Open);
-        }
+
     }
 }
 #endif

@@ -169,6 +169,8 @@ namespace WatchMe.Services
 
                 await Task.WhenAll();
             }
+
+            var allFiles = await _videosRepository.GetAllVideosAsync();
         }
     }
 }
