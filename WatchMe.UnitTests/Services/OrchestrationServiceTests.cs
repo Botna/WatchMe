@@ -1,7 +1,7 @@
 ﻿using FluentAssertions;
 using Moq;
 using WatchMe.Camera;
-using WatchMe.Persistance;
+using WatchMe.Persistance.CloudProviders;
 using WatchMe.Persistance.Sqlite;
 using WatchMe.Persistance.Sqlite.Tables;
 using WatchMe.Repository;

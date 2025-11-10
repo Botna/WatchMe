@@ -4,7 +4,7 @@ using Plugin.Maui.ScreenRecording;
 using WatchMe.Camera;
 using WatchMe.Extensions;
 using WatchMe.Pages;
-using WatchMe.Persistance;
+using WatchMe.Persistance.CloudProviders;
 using WatchMe.Persistance.Sqlite;
 using WatchMe.Services;
 
