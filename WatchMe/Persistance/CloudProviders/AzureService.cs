@@ -3,15 +3,7 @@ using WatchMe.Helpers;
 
 namespace WatchMe.Persistance.CloudProviders
 {
-    public interface ICloudProviderService
-    {
-        Task UploadContentToCloud(Stream fileStream, string contentName);
-        Task<string> GetAzureConnectionString();
-
-        Task SetAzureConnectionString(string connstr);
-    }
-
-    public class CloudProviderService : ICloudProviderService
+    public class AzureService : ICloudProviderService
     {
         private const string AZURESTORAGECONTAINERCONNECTIONSTRINGKEY = "azure_storagecontainer_connectionstring";
         public async Task UploadContentToCloud(Stream fileStream, string contentName)
