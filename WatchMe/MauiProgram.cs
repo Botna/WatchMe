@@ -38,8 +38,9 @@ namespace WatchMe
             builder.Services.AddTransient<IVideoChunksRepository, VideoChunksRepository>();
             builder.Services.AddTransient<ICameraWrapper, CameraWrapper>();
 
+
             builder.Services.AddTransient<IOrchestrationService, OrchestrationService>();
-            builder.Services.AddTransient<ICloudProviderService, CloudProviderService>();
+            builder.Services.AddTransient<ICloudProviderService, AzureService>();
             builder.Services.AddTransient<INotificationService, NotificationService>();
 #if DEBUG
             ISEMULATED = true;

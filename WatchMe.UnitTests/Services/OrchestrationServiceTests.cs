@@ -35,7 +35,7 @@ namespace WatchMe.UnitTests.Services
             var cameraWrapperMock = new Mock<ICameraWrapper>();
             cameraWrapperMock.Setup(x => x.GetAvailableResolutions(It.IsAny<CameraPosition>())).Returns(new List<Size>() { new Size(1920, 1080) });
 
-            var service = new OrchestrationService(cloudProviderServiceMock.Object, fileSystemServiceMock.Object, notificationServiceMock.Object, databaseInitializerMock.Object, videosRepositoryMock.Object, cameraWrapperMock.Object);
+            var service = new OrchestrationService(cloudProviderServiceMock.Object, fileSystemServiceMock.Object, notificationServiceMock.Object, databaseInitializerMock.Object, videosRepositoryMock.Object, cameraWrapperMock.Object, null);
             service.Initialize(new CameraView(), new CameraView());
 
             await service.InitiateRecordingProcedure();

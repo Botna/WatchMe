@@ -20,20 +20,21 @@ namespace WatchMe.Services
         private readonly INotificationService _notificationService;
         private readonly IVideosRepository _videosRepository;
         private readonly ICameraWrapper _cameraWrapper;
+        private readonly IVideoUploadForegroundService _videoUploadForegroundService;
 
         private string _videoTimeStamp;
         private string _frontVideoFileName;
         private string _backVideoFileName;
-        private Timer _videoSplitterTimer;
 
         public OrchestrationService(ICloudProviderService cloudProviderService, IFileSystemService fileSystemService, INotificationService notificationService, IDatabaseInitializer databaseInitializer,
-            IVideosRepository videosRepository, ICameraWrapper cameraWrapper)
+            IVideosRepository videosRepository, ICameraWrapper cameraWrapper, IVideoUploadForegroundService videoUploadForegroundService)
         {
             _cloudProviderService = cloudProviderService;
             _fileSystemService = fileSystemService;
             _notificationService = notificationService;
             _videosRepository = videosRepository;
             _cameraWrapper = cameraWrapper;
+            _videoUploadForegroundService = videoUploadForegroundService;
 
             databaseInitializer.Init();
         }
@@ -58,9 +59,7 @@ namespace WatchMe.Services
             await StartRecordingAsync(CameraPosition.Front, _frontVideoFileName);
             await StartRecordingAsync(CameraPosition.Back, _backVideoFileName);
 
-            //var autoEvent = new AutoResetEvent(false);
-            //var timerCallback = new TimerCallback(ReceiveTimerTick);
-            //_videoSplitterTimer = new Timer(timerCallback, autoEvent, 3000, 3000);
+            _videoUploadForegroundService.StartVUFS();
         }
 
         private async Task StartRecordingAsync(CameraPosition position, string filename)
@@ -93,51 +92,9 @@ namespace WatchMe.Services
             return sizes.MinBy(size => size.Width * size.Height);
         }
 
-        private void ReceiveTimerTick(object? objectDetails)
-        {
-
-            //NOT THREADSAFE, will fail if video is being written at a certain speed.
-
-            //bool frontFinished = false;
-            //var currentFrontVideoBytes = _fileSystemService.GetVideoBytesByFile(Path.Combine(FileSystem.Current.CacheDirectory, $"{_frontVideoFileName}"), _frontVideoLastByteWritten);
-            //if (currentFrontVideoBytes.Length > 0)
-            //{
-            //    _frontVideoLastByteWritten += currentFrontVideoBytes.Count();
-            //    _fileSystemService.SaveVideoToFileSystem(currentFrontVideoBytes, $"chunked_{_frontVideoFileName}_{_timerCount}");
-
-            //}
-            //else
-            //{
-            //    frontFinished = true;
-            //}
-
-            //var backFinished = false;
-            //var currentBackVideoBytes = _fileSystemService.GetVideoBytesByFile(Path.Combine(FileSystem.Current.CacheDirectory, $"{_backVideoFileName}"), _backVideoLastByteWritten);
-            //if (currentFrontVideoBytes.Length > 0)
-            //{
-            //    _backVideoLastByteWritten += currentFrontVideoBytes.Count();
-            //    _fileSystemService.SaveVideoToFileSystem(currentFrontVideoBytes, $"chunked_{_backVideoFileName}_{_timerCount}");
-
-            //}
-            //else
-            //{
-            //    backFinished = true;
-            //}
-
-
-            //if (frontFinished && backFinished)
-            //{
-            //    _videoSplitterTimer.Dispose();
-            //}
-            //_timerCount++;
-        }
-
-
-
         public async Task StopRecordingProcedure()
         {
-            //_videoSplitterTimer.Dispose();
-
+            _videoUploadForegroundService.StopVUFS();
             var frontCameraStopTask = _cameraWrapper.StopCameraAsync(CameraPosition.Front);
             var backCameraStopTask = _cameraWrapper.StopCameraAsync(CameraPosition.Back);
 
@@ -170,7 +127,7 @@ namespace WatchMe.Services
                 await Task.WhenAll();
             }
 
-            var allFiles = await _videosRepository.GetAllVideosAsync();
+            //var allFiles = await _videosRepository.GetAllVideosAsync();
         }
     }
 }
