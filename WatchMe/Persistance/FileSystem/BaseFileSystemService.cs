@@ -16,7 +16,7 @@ namespace WatchMe.Persistance.Implementations
             return await File.ReadAllBytesAsync(BuildCacheFileDirectory(fileName));
         }
 
-        public async Task<byte[]?> GetFileBytesFromCacheDirectory(string fileName, int byteOffset)
+        public byte[]? GetFileBytesFromCacheDirectory(string fileName, long byteOffset)
         {
             var filePath = BuildCacheFileDirectory(fileName);
             using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))

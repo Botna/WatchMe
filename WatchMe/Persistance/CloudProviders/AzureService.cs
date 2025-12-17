@@ -1,4 +1,5 @@
 ﻿using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Specialized;
 using WatchMe.Helpers;
 
 namespace WatchMe.Persistance.CloudProviders
@@ -31,6 +32,38 @@ namespace WatchMe.Persistance.CloudProviders
             catch (Exception ex)
             {
                 ToastHelper.CreateToast("Issue uploading to SC");
+            }
+        }
+
+        public async Task AppendContentToCloud(byte[] bytes, string contentName)
+        {
+            string storageContainerConnectionString = await SecureStorage.Default.GetAsync(AZURESTORAGECONTAINERCONNECTIONSTRINGKEY);
+            try
+            {
+                var containerClient = new BlobContainerClient(storageContainerConnectionString, "watchme");
+                await containerClient.CreateIfNotExistsAsync();
+
+                var appendBlobClient = containerClient.GetAppendBlobClient(contentName);
+                await appendBlobClient.CreateIfNotExistsAsync();
+
+                int maxBlockSize = appendBlobClient.AppendBlobMaxAppendBlockBytes;
+                long bytesLeft = bytes.Length;
+                var count = 0;
+                while (bytesLeft > 0)
+                {
+                    int blockSize = (int)Math.Min(bytesLeft, maxBlockSize);
+                    var buffer = bytes.Skip(count).Take(blockSize).ToArray();
+                    await using (MemoryStream memoryStream = new MemoryStream(buffer, 0, buffer.Length))
+                    {
+                        await appendBlobClient.AppendBlockAsync(memoryStream);
+                    }
+                    bytesLeft -= buffer.Length;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                ToastHelper.CreateToast("issue uploaded to AppendBlob");
             }
         }
 
