@@ -4,8 +4,8 @@ using Android.Content;
 using Android.Content.PM;
 using Android.OS;
 using Android.Runtime;
-using System.Collections.Concurrent;
 using WatchMe.Helpers;
+using WatchMe.Persistance.CloudProviders;
 using WatchMe.Persistance.Sqlite;
 using WatchMe.Repository;
 
@@ -16,8 +16,8 @@ namespace WatchMe.Services
     public class VideoUploadForegroundService : Service, IVideoUploadForegroundService
     {
         private CancellationTokenSource _cancellationTokenSource;
+        //private ConcurrentDictionary<int, long> _videoIdsInProgress = new ConcurrentDictionary<int, long>();
 
-        private ConcurrentBag<int> _videoIdsInProgress = new ConcurrentBag<int>();
         public VideoUploadForegroundService()
         { }
 
@@ -39,18 +39,23 @@ namespace WatchMe.Services
                 Task.Run(() => UploadActiveChunks(), _cancellationTokenSource.Token);
 
             }
-            else if (intent.Action == "STOP_SERVICE")
-            {
-                //Task.Run(() => StopCameraRecording());
-                StopForeground(true);//Stop the service
-                StopSelfResult(startId);
-            }
+            //else if (intent.Action == "STOP_SERVICE")
+            //{
+            //    //Task.Run(() => StopCameraRecording());
+            //    StopForeground(true);//Stop the service
+            //    StopSelfResult(startId);
+            //}
 
             return StartCommandResult.NotSticky;
         }
 
         public async Task UploadActiveChunks()
         {
+
+            //Lets build this as if there is only one active instance of this service.
+            //Will have to test an dsee what we can do to make that a reality later.
+            //Subsequent SSTART_SERVICE calls are another story, and will need to be handled appropriately.
+
             //what do we wanna do
 
             //TODO, this needs to handle an interrupted video, but do this later.
@@ -62,44 +67,51 @@ namespace WatchMe.Services
 
             //This will end up with a .ts copy on cloud providers, completely separate than whatever we save to the local file system.
 
-            var fileSystemService = CurrentServiceProvider.Services.GetService<IFileSystemService>();
-            var videosRepository = CurrentServiceProvider.Services.GetService<IVideosRepository>();
-
-            //Video chunks may be more of a `interuption` thing, or if we have to tear down this task and start a new one with multiple SERVICE_START's
-            //Right now, just the video files may be sufficient, so long as they get closed out correctly.
-            //var videoChunksRepository = CurrentServiceProvider.Services.GetService<IVideoChunksRepository>();
-
-            var files = await videosRepository.GetAllVideosAsync();
-
-            //var fileChunks = await videoChunksRepository.GetVideoChunksByVideoIdsAsync(files.Select(x => x.Id));
-
-            //this should represent all the in progress ids that we need to worry about.  This Service is kicked off when videos are in progress of being recorded, so we can pretty much
-            // be sure that well have our appropraite videoId's at our disposal when this launches.
-
-            //Subsequent SSTART_SERVICE calls are another story, and will need to be handled appropriately.
-
-            files.ForEach(x => _videoIdsInProgress.Add(x.Id));
 
             var secondsToSleep = 5;
+
+            var fileSystemService = CurrentServiceProvider.Services.GetService<IFileSystemService>();
+            var videosRepository = CurrentServiceProvider.Services.GetService<IVideosRepository>();
+            var cloudProviderService = CurrentServiceProvider.Services.GetService<ICloudProviderService>();
+
+            if (fileSystemService == null || videosRepository == null || cloudProviderService == null)
+            {
+                throw new Exception("error pulling from DI");
+            }
+
+
+            //files.ForEach(x => _videoIdsInProgress.TryAdd(x.Id, 0));
+
 
             //Stopping service does not kill this task.
             var SENTINEL = true;
             while (SENTINEL)
             {
                 Thread.Sleep(secondsToSleep * 1000);
+                SENTINEL = false;
+                var files = await videosRepository.GetAllVideosAsync();
                 //Spin, pull bytes of currently recording videos, and start uploading htem in ~5 second increments. 
                 foreach (var file in files)
                 {
 
-                    //do something
+                    if (file.TotalBytes != 0 && file.TotalBytes == file.BytesOffloaded)
+                    {
+                        //Video is finished recording, and we've uploaded all the bytes.
 
+                        //need to handle cleanup here, or possibly after the while loop.
+                        continue;
+                    }
 
+                    var bytes = fileSystemService?.GetFileBytesFromCacheDirectory(file.VideoName, file.BytesOffloaded);
+                    if (bytes != null && bytes.Length > 0)
+                    {
+                        SENTINEL = true;
+                        await cloudProviderService.AppendContentToCloud(bytes, file.VideoName);
+                        await videosRepository.UpdateBytesOffLoadedOfVideo(file.Id, file.BytesOffloaded + bytes.Length);
+                    }
                 }
-                SENTINEL = false;
+
             }
-
-
-
         }
 
         //Start and Stop Intents, set the actions for the MainActivity to get the state of the foreground service

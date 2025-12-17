@@ -50,10 +50,17 @@ namespace WatchMe.Services
 
         public async Task InitiateRecordingProcedure()
         {
+            if (MauiProgram.ISEMULATED)
+            {
+                var allVideos = await _videosRepository.GetAllVideosAsync();
+                await _videosRepository.DeleteVideosAsync(allVideos.ToArray());
+            }
+
             if (!MauiProgram.ISEMULATED)
             {
                 var message = "Andrew just started a WatchMe Routine. Click here to watch along: https://www.youtube.com/watch?v=dQw4w9WgXcQ";
                 await _notificationService.SendTextToConfiguredContact(message);
+
             }
 
             await StartRecordingAsync(CameraPosition.Front, _frontVideoFileName);
@@ -94,7 +101,7 @@ namespace WatchMe.Services
 
         public async Task StopRecordingProcedure()
         {
-            _videoUploadForegroundService.StopVUFS();
+            //_videoUploadForegroundService.StopVUFS();
             var frontCameraStopTask = _cameraWrapper.StopCameraAsync(CameraPosition.Front);
             var backCameraStopTask = _cameraWrapper.StopCameraAsync(CameraPosition.Back);
 
@@ -114,18 +121,23 @@ namespace WatchMe.Services
             backVideo.TotalBytes = (await backVideoBytesTask).Count();
             backVideo.VideoState = VideoStates.Finished.ToString();
 
-            var recordsUpdated = await _videosRepository.UpdateVideosAsync(frontVideo, backVideo);
+            await _videosRepository.UpdateTotalBytesOfVideo(frontVideo.Id, frontVideo.TotalBytes);
+            await _videosRepository.UpdateTotalBytesOfVideo(backVideo.Id, backVideo.TotalBytes);
+            await _videosRepository.UpdateStateOfVideos(VideoStates.Finished, frontVideo.Id, backVideo.Id);
 
-            if (!MauiProgram.ISEMULATED)
-            {
-                var frontVideoFileStream = _fileSystemService.GetFileStreamOfFile(_frontVideoFileName);
-                var frontUploadTask = _cloudProviderService.UploadContentToCloud(frontVideoFileStream, _frontVideoFileName);
 
-                var backVideoFileStream = _fileSystemService.GetFileStreamOfFile(_backVideoFileName);
-                var backUploadTask = _cloudProviderService.UploadContentToCloud(backVideoFileStream, _backVideoFileName);
+            //var recordsUpdated = await _videosRepository.UpdateVideosAsync(frontVideo, backVideo);
 
-                await Task.WhenAll();
-            }
+            //if (!MauiProgram.ISEMULATED)
+            //{
+            //var frontVideoFileStream = _fileSystemService.GetFileStreamOfFile(_frontVideoFileName);
+            //var frontUploadTask = _cloudProviderService.UploadContentToCloud(frontVideoFileStream, _frontVideoFileName);
+
+            //var backVideoFileStream = _fileSystemService.GetFileStreamOfFile(_backVideoFileName);
+            //var backUploadTask = _cloudProviderService.UploadContentToCloud(backVideoFileStream, _backVideoFileName);
+
+            //await Task.WhenAll();
+            //}
 
             //var allFiles = await _videosRepository.GetAllVideosAsync();
         }
