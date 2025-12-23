@@ -6,6 +6,7 @@ using WatchMe.Persistance.Sqlite;
 using WatchMe.Persistance.Sqlite.Tables;
 using WatchMe.Repository;
 using WatchMe.Services;
+using WatchMe.Services.ForegroundServices;
 
 namespace WatchMe.UnitTests.Services
 {
@@ -35,10 +36,10 @@ namespace WatchMe.UnitTests.Services
             var cameraWrapperMock = new Mock<ICameraWrapper>();
             cameraWrapperMock.Setup(x => x.GetAvailableResolutions(It.IsAny<CameraPosition>())).Returns(new List<Size>() { new Size(1920, 1080) });
 
-            var videoUploaderServiceMock = new Mock<IVideoUploadForegroundService>();
-            videoUploaderServiceMock.Setup(x => x.StartVUFS());
+            var serviceDispatcherMock = new Mock<IForegroundServiceDispatcher>();
+            serviceDispatcherMock.Setup(x => x.StartVUFS());
 
-            var service = new OrchestrationService(cloudProviderServiceMock.Object, fileSystemServiceMock.Object, notificationServiceMock.Object, databaseInitializerMock.Object, videosRepositoryMock.Object, cameraWrapperMock.Object, videoUploaderServiceMock.Object);
+            var service = new OrchestrationService(cloudProviderServiceMock.Object, fileSystemServiceMock.Object, notificationServiceMock.Object, databaseInitializerMock.Object, videosRepositoryMock.Object, cameraWrapperMock.Object, serviceDispatcherMock.Object);
             service.Initialize(new CameraView(), new CameraView());
 
             await service.InitiateRecordingProcedure();
@@ -52,6 +53,7 @@ namespace WatchMe.UnitTests.Services
             databaseInitializerMock.VerifyAll();
             videosRepositoryMock.VerifyAll();
             cameraWrapperMock.VerifyAll();
+            serviceDispatcherMock.VerifyAll();
         }
     }
 }

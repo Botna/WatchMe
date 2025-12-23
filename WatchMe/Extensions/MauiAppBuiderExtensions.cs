@@ -1,6 +1,6 @@
 ﻿using WatchMe.Persistance.Implementations;
 using WatchMe.Repository;
-using WatchMe.Services;
+using WatchMe.Services.ForegroundServices;
 
 namespace WatchMe.Extensions
 {
@@ -11,7 +11,7 @@ namespace WatchMe.Extensions
 
 #if ANDROID
             builder.Services.AddTransient<IFileSystemService, AndroidFileSystemService>();
-            builder.Services.AddTransient<IVideoUploadForegroundService, VideoUploadForegroundService>();
+            builder.Services.AddTransient<IForegroundServiceDispatcher, AndroidForegroundServiceDispatcher>();
 #endif
 
 #if IOS

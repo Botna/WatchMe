@@ -1,55 +1,48 @@
-﻿#if ANDROID
-using Android.App;
-using Android.Content;
-using Android.Content.PM;
-using Android.OS;
-using Android.Runtime;
-using WatchMe.Helpers;
+﻿using WatchMe.Helpers;
 using WatchMe.Persistance.CloudProviders;
 using WatchMe.Persistance.Sqlite;
 using WatchMe.Repository;
+using WatchMe.Services.ForegroundServices;
 
 namespace WatchMe.Services
 {
 
-    [Service(ForegroundServiceType = ForegroundService.TypeDataSync)]
-    public class VideoUploadForegroundService : Service, IVideoUploadForegroundService
+    public class VideoUploadForegroundService : IForegroundService
     {
-        private CancellationTokenSource _cancellationTokenSource;
         //private ConcurrentDictionary<int, long> _videoIdsInProgress = new ConcurrentDictionary<int, long>();
 
         public VideoUploadForegroundService()
         { }
 
-        public override IBinder OnBind(Intent intent)
-        {
-            throw new NotImplementedException();
-        }
+        //public override IBinder OnBind(Intent intent)
+        //{
+        //    throw new NotImplementedException();
+        //}
 
-        [return: GeneratedEnum]//we catch the actions intents to know the state of the foreground service
-        public override StartCommandResult OnStartCommand(Intent intent, [GeneratedEnum] StartCommandFlags flags, int startId)
-        {
-            if (intent.Action == "START_SERVICE")
-            {
-                RegisterNotification();//Proceed to notify
+        //[return: GeneratedEnum]//we catch the actions intents to know the state of the foreground service
+        //public override StartCommandResult OnStartCommand(Intent intent, [GeneratedEnum] StartCommandFlags flags, int startId)
+        //{
+        //    if (intent.Action == "START_SERVICE")
+        //    {
+        //        RegisterNotification();//Proceed to notify
 
-                _cancellationTokenSource = new CancellationTokenSource();
+        //        _cancellationTokenSource = new CancellationTokenSource();
 
-                //Issue if we hit this multiple times, and try to start uploading identical chunks.  Need some state blockage or threadsafe containers.
-                Task.Run(() => UploadActiveChunks(), _cancellationTokenSource.Token);
+        //        //Issue if we hit this multiple times, and try to start uploading identical chunks.  Need some state blockage or threadsafe containers.
+        //        Task.Run(() => UploadActiveChunks(), _cancellationTokenSource.Token);
 
-            }
-            //else if (intent.Action == "STOP_SERVICE")
-            //{
-            //    //Task.Run(() => StopCameraRecording());
-            //    StopForeground(true);//Stop the service
-            //    StopSelfResult(startId);
-            //}
+        //    }
+        //    //else if (intent.Action == "STOP_SERVICE")
+        //    //{
+        //    //    //Task.Run(() => StopCameraRecording());
+        //    //    StopForeground(true);//Stop the service
+        //    //    StopSelfResult(startId);
+        //    //}
 
-            return StartCommandResult.NotSticky;
-        }
+        //    return StartCommandResult.NotSticky;
+        //}
 
-        public async Task UploadActiveChunks()
+        public async Task DoWorkAsync()
         {
 
             //Lets build this as if there is only one active instance of this service.
@@ -114,37 +107,7 @@ namespace WatchMe.Services
             }
         }
 
-        //Start and Stop Intents, set the actions for the MainActivity to get the state of the foreground service
-        //Setting one action to start and one action to stop the foreground service
-        public void StartVUFS()
-        {
-            Intent startService = new Intent(MainActivity.ActivityCurrent, typeof(VideoUploadForegroundService));
-            startService.SetAction("START_SERVICE");
-            MainActivity.ActivityCurrent.StartForegroundService(startService);
-        }
-
-        public void StopVUFS()
-        {
-            Intent stopIntent = new Intent(MainActivity.ActivityCurrent, typeof(VideoUploadForegroundService));
-            stopIntent.SetAction("STOP_SERVICE");
-            MainActivity.ActivityCurrent.StartForegroundService(stopIntent);
-        }
-
-        private void RegisterNotification()
-        {
-            NotificationChannel channel = new NotificationChannel("ServiceChannel", "ServiceDemo", NotificationImportance.Max);
-            NotificationManager manager = (NotificationManager)MainActivity.ActivityCurrent.GetSystemService(Context.NotificationService);
-            manager.CreateNotificationChannel(channel);
-            Notification notification = new Notification.Builder(this, "ServiceChannel")
-               .SetContentTitle("Service Working")
-               .SetSmallIcon(Resource.Drawable.abc_btn_check_material)
-               .SetOngoing(true)
-               .SetForegroundServiceBehavior((int)ForegroundService.TypeDataSync)
-               .Build();
-
-            StartForeground(100, notification);
-
-        }
+        //We let this service stop by its self after its finished uploading.
+        public void StopService() { }
     }
 }
-#endif
