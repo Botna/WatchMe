@@ -11,7 +11,7 @@ namespace WatchMe.Services.ForegroundServices
                 switch (service)
                 {
                     case ForegroundServiceEnum.VUFS:
-                        return CurrentServiceProvider.Services.GetService<VideoUploadForegroundService>();
+                        return GetVUFS();
                     default: throw new Exception("unable to parse foregroundserviceenum to appropriate type");
                 }
             }
@@ -20,5 +20,12 @@ namespace WatchMe.Services.ForegroundServices
                 throw new Exception("unable to parse foregroundserviceenum to appropriate type");
             }
         }
+
+        private static VideoUploadForegroundService GetVUFS()
+        {
+            var vufs = CurrentServiceProvider.Services.GetService<VideoUploadForegroundService>();
+            return vufs ?? throw new ArgumentNullException(nameof(vufs));
+        }
     }
+
 }
