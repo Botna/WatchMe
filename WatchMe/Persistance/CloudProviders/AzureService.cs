@@ -38,6 +38,7 @@ namespace WatchMe.Persistance.CloudProviders
         public async Task AppendContentToCloud(byte[] bytes, string contentName)
         {
             string storageContainerConnectionString = await SecureStorage.Default.GetAsync(AZURESTORAGECONTAINERCONNECTIONSTRINGKEY);
+
             try
             {
                 var containerClient = new BlobContainerClient(storageContainerConnectionString, "watchme");

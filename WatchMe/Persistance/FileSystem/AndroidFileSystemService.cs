@@ -15,7 +15,7 @@ namespace WatchMe.Persistance.Implementations
             {
                 return bytes;
             }
-
+            //use FFMPeg to convert the bytes[] into a proper mp4 video, then save the bytes as an mp4, so my phoen can play it!
             var context = Platform.CurrentActivity;
             var resolver = context.ContentResolver;
             var contentValues = new ContentValues();
