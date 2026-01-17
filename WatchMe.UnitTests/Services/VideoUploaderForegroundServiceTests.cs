@@ -142,5 +142,55 @@ namespace WatchMe.UnitTests.Services
             _mockCloudProviderRepository.VerifyAll();
             _videoUploadForegroundService.Verify(x => x.WaitForNextTick(), Times.Exactly(3));
         }
+
+        [Fact]
+        public async Task UploadVideo_DoubleInProcessVideoThatFinishes()
+        {
+            var firstFileId = 1;
+            var secondFileId = 2;
+            var firstFileName = "TestVid1";
+            var secondFileName = "TestVid2";
+            var partialBytes = 100;
+            var totalBytes = 200;
+
+            _mockVideoRepository.SetupSequence(x => x.GetAllVideosAsync())
+                .Returns(Task.FromResult(new List<Videos>()
+            {
+                new Videos{ Id = firstFileId, VideoName = firstFileName, BytesOffloaded = 0, TotalBytes = partialBytes, VideoState = VideoStates.Finished.ToString() },
+                new Videos{ Id = secondFileId, VideoName = secondFileName, BytesOffloaded = 0, TotalBytes = partialBytes, VideoState = VideoStates.Finished.ToString() }
+
+            })).Returns(Task.FromResult(new List<Videos>()
+            {
+                 new Videos{ Id = firstFileId, VideoName = firstFileName, BytesOffloaded = partialBytes, TotalBytes = totalBytes, VideoState = VideoStates.Finished.ToString() },
+                new Videos{ Id = secondFileId, VideoName = secondFileName, BytesOffloaded = partialBytes, TotalBytes = totalBytes, VideoState = VideoStates.Finished.ToString() }
+            })).Returns(Task.FromResult(new List<Videos>()
+            {
+                 new Videos{ Id = firstFileId, VideoName = firstFileName, BytesOffloaded = totalBytes, TotalBytes = totalBytes, VideoState = VideoStates.Finished.ToString() },
+                new Videos{ Id = secondFileId, VideoName = secondFileName, BytesOffloaded = totalBytes, TotalBytes = totalBytes, VideoState = VideoStates.Finished.ToString() }
+            }));
+
+            _mockVideoRepository.Setup(x => x.UpdateBytesOffLoadedOfVideo(firstFileId, partialBytes)).Returns(Task.CompletedTask);
+            _mockVideoRepository.Setup(x => x.UpdateBytesOffLoadedOfVideo(secondFileId, partialBytes)).Returns(Task.CompletedTask);
+
+            _mockVideoRepository.Setup(x => x.UpdateBytesOffLoadedOfVideo(firstFileId, totalBytes)).Returns(Task.CompletedTask);
+            _mockVideoRepository.Setup(x => x.UpdateBytesOffLoadedOfVideo(secondFileId, totalBytes)).Returns(Task.CompletedTask);
+
+            var byteArray = Enumerable.Repeat<byte>(9, 100).ToArray();
+            _mockFileSystemService.Setup(x => x.GetFileBytesFromCacheDirectory(firstFileName, 0)).Returns(byteArray);
+            _mockFileSystemService.Setup(x => x.GetFileBytesFromCacheDirectory(secondFileName, 0)).Returns(byteArray);
+
+            _mockFileSystemService.Setup(x => x.GetFileBytesFromCacheDirectory(firstFileName, partialBytes)).Returns(byteArray);
+            _mockFileSystemService.Setup(x => x.GetFileBytesFromCacheDirectory(secondFileName, partialBytes)).Returns(byteArray);
+
+            _mockCloudProviderRepository.Setup(x => x.AppendContentToCloud(byteArray, firstFileName)).Returns(Task.CompletedTask);
+            _mockCloudProviderRepository.Setup(x => x.AppendContentToCloud(byteArray, secondFileName)).Returns(Task.CompletedTask);
+
+            await _videoUploadForegroundService.Object.DoWorkAsync();
+
+            _mockVideoRepository.VerifyAll();
+            _mockFileSystemService.VerifyAll();
+            _mockCloudProviderRepository.VerifyAll();
+            _videoUploadForegroundService.Verify(x => x.WaitForNextTick(), Times.Exactly(3));
+        }
     }
 }
