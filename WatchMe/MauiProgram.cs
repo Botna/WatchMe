@@ -42,6 +42,8 @@ namespace WatchMe
             builder.Services.AddTransient<IOrchestrationService, OrchestrationService>();
             builder.Services.AddTransient<ICloudProviderService, AzureService>();
             builder.Services.AddTransient<INotificationService, NotificationService>();
+
+            builder.Services.AddSingleton<VideoUploadForegroundService>();
 #if DEBUG
             ISEMULATED = true;
             builder.Logging.AddDebug();

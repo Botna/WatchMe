@@ -3,6 +3,7 @@ using WatchMe.Persistance.CloudProviders;
 using WatchMe.Persistance.Sqlite;
 using WatchMe.Persistance.Sqlite.Tables;
 using WatchMe.Repository;
+using WatchMe.Services.ForegroundServices;
 
 namespace WatchMe.Services
 {
@@ -20,21 +21,21 @@ namespace WatchMe.Services
         private readonly INotificationService _notificationService;
         private readonly IVideosRepository _videosRepository;
         private readonly ICameraWrapper _cameraWrapper;
-        private readonly IVideoUploadForegroundService _videoUploadForegroundService;
+        private readonly IForegroundServiceDispatcher _serviceDispatcher;
 
         private string _videoTimeStamp;
         private string _frontVideoFileName;
         private string _backVideoFileName;
 
         public OrchestrationService(ICloudProviderService cloudProviderService, IFileSystemService fileSystemService, INotificationService notificationService, IDatabaseInitializer databaseInitializer,
-            IVideosRepository videosRepository, ICameraWrapper cameraWrapper, IVideoUploadForegroundService videoUploadForegroundService)
+            IVideosRepository videosRepository, ICameraWrapper cameraWrapper, IForegroundServiceDispatcher serviceDispatcher)
         {
             _cloudProviderService = cloudProviderService;
             _fileSystemService = fileSystemService;
             _notificationService = notificationService;
             _videosRepository = videosRepository;
             _cameraWrapper = cameraWrapper;
-            _videoUploadForegroundService = videoUploadForegroundService;
+            _serviceDispatcher = serviceDispatcher;
 
             databaseInitializer.Init();
         }
@@ -66,7 +67,7 @@ namespace WatchMe.Services
             await StartRecordingAsync(CameraPosition.Front, _frontVideoFileName);
             await StartRecordingAsync(CameraPosition.Back, _backVideoFileName);
 
-            _videoUploadForegroundService.StartVUFS();
+            _serviceDispatcher.StartVUFS();
         }
 
         private async Task StartRecordingAsync(CameraPosition position, string filename)

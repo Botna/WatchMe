@@ -1,55 +1,24 @@
-﻿#if ANDROID
-using Android.App;
-using Android.Content;
-using Android.Content.PM;
-using Android.OS;
-using Android.Runtime;
-using WatchMe.Helpers;
-using WatchMe.Persistance.CloudProviders;
+﻿using WatchMe.Persistance.CloudProviders;
 using WatchMe.Persistance.Sqlite;
 using WatchMe.Repository;
+using WatchMe.Services.ForegroundServices;
 
 namespace WatchMe.Services
 {
 
-    [Service(ForegroundServiceType = ForegroundService.TypeDataSync)]
-    public class VideoUploadForegroundService : Service, IVideoUploadForegroundService
+    public class VideoUploadForegroundService : IForegroundService
     {
-        private CancellationTokenSource _cancellationTokenSource;
-        //private ConcurrentDictionary<int, long> _videoIdsInProgress = new ConcurrentDictionary<int, long>();
+        private readonly IFileSystemService _fileSystemService;
+        private readonly IVideosRepository _videosRepository;
+        private readonly ICloudProviderService _cloudProviderService;
 
-        public VideoUploadForegroundService()
-        { }
-
-        public override IBinder OnBind(Intent intent)
+        public VideoUploadForegroundService(IFileSystemService? fileSystemService, IVideosRepository? videosRepository, ICloudProviderService? cloudProviderService)
         {
-            throw new NotImplementedException();
+            _cloudProviderService = cloudProviderService ?? throw new ArgumentNullException(nameof(cloudProviderService));
+            _fileSystemService = fileSystemService ?? throw new ArgumentNullException(nameof(fileSystemService));
+            _videosRepository = videosRepository ?? throw new ArgumentNullException(nameof(videosRepository)); ;
         }
-
-        [return: GeneratedEnum]//we catch the actions intents to know the state of the foreground service
-        public override StartCommandResult OnStartCommand(Intent intent, [GeneratedEnum] StartCommandFlags flags, int startId)
-        {
-            if (intent.Action == "START_SERVICE")
-            {
-                RegisterNotification();//Proceed to notify
-
-                _cancellationTokenSource = new CancellationTokenSource();
-
-                //Issue if we hit this multiple times, and try to start uploading identical chunks.  Need some state blockage or threadsafe containers.
-                Task.Run(() => UploadActiveChunks(), _cancellationTokenSource.Token);
-
-            }
-            //else if (intent.Action == "STOP_SERVICE")
-            //{
-            //    //Task.Run(() => StopCameraRecording());
-            //    StopForeground(true);//Stop the service
-            //    StopSelfResult(startId);
-            //}
-
-            return StartCommandResult.NotSticky;
-        }
-
-        public async Task UploadActiveChunks()
+        public async Task DoWorkAsync()
         {
 
             //Lets build this as if there is only one active instance of this service.
@@ -68,16 +37,7 @@ namespace WatchMe.Services
             //This will end up with a .ts copy on cloud providers, completely separate than whatever we save to the local file system.
 
 
-            var secondsToSleep = 5;
 
-            var fileSystemService = CurrentServiceProvider.Services.GetService<IFileSystemService>();
-            var videosRepository = CurrentServiceProvider.Services.GetService<IVideosRepository>();
-            var cloudProviderService = CurrentServiceProvider.Services.GetService<ICloudProviderService>();
-
-            if (fileSystemService == null || videosRepository == null || cloudProviderService == null)
-            {
-                throw new Exception("error pulling from DI");
-            }
 
 
             //files.ForEach(x => _videoIdsInProgress.TryAdd(x.Id, 0));
@@ -87,9 +47,9 @@ namespace WatchMe.Services
             var SENTINEL = true;
             while (SENTINEL)
             {
-                Thread.Sleep(secondsToSleep * 1000);
+                WaitForNextTick();
                 SENTINEL = false;
-                var files = await videosRepository.GetAllVideosAsync();
+                var files = await _videosRepository.GetAllVideosAsync();
                 //Spin, pull bytes of currently recording videos, and start uploading htem in ~5 second increments. 
                 foreach (var file in files)
                 {
@@ -102,49 +62,25 @@ namespace WatchMe.Services
                         continue;
                     }
 
-                    var bytes = fileSystemService?.GetFileBytesFromCacheDirectory(file.VideoName, file.BytesOffloaded);
+                    var bytes = _fileSystemService.GetFileBytesFromCacheDirectory(file.VideoName, file.BytesOffloaded);
                     if (bytes != null && bytes.Length > 0)
                     {
                         SENTINEL = true;
-                        await cloudProviderService.AppendContentToCloud(bytes, file.VideoName);
-                        await videosRepository.UpdateBytesOffLoadedOfVideo(file.Id, file.BytesOffloaded + bytes.Length);
+                        await _cloudProviderService.AppendContentToCloud(bytes, file.VideoName);
+                        await _videosRepository.UpdateBytesOffLoadedOfVideo(file.Id, file.BytesOffloaded + bytes.Length);
                     }
                 }
 
             }
         }
 
-        //Start and Stop Intents, set the actions for the MainActivity to get the state of the foreground service
-        //Setting one action to start and one action to stop the foreground service
-        public void StartVUFS()
+        public virtual void WaitForNextTick()
         {
-            Intent startService = new Intent(MainActivity.ActivityCurrent, typeof(VideoUploadForegroundService));
-            startService.SetAction("START_SERVICE");
-            MainActivity.ActivityCurrent.StartForegroundService(startService);
+            var secondsToSleep = 5;
+            Thread.Sleep(secondsToSleep * 1000);
         }
 
-        public void StopVUFS()
-        {
-            Intent stopIntent = new Intent(MainActivity.ActivityCurrent, typeof(VideoUploadForegroundService));
-            stopIntent.SetAction("STOP_SERVICE");
-            MainActivity.ActivityCurrent.StartForegroundService(stopIntent);
-        }
-
-        private void RegisterNotification()
-        {
-            NotificationChannel channel = new NotificationChannel("ServiceChannel", "ServiceDemo", NotificationImportance.Max);
-            NotificationManager manager = (NotificationManager)MainActivity.ActivityCurrent.GetSystemService(Context.NotificationService);
-            manager.CreateNotificationChannel(channel);
-            Notification notification = new Notification.Builder(this, "ServiceChannel")
-               .SetContentTitle("Service Working")
-               .SetSmallIcon(Resource.Drawable.abc_btn_check_material)
-               .SetOngoing(true)
-               .SetForegroundServiceBehavior((int)ForegroundService.TypeDataSync)
-               .Build();
-
-            StartForeground(100, notification);
-
-        }
+        //We let this service stop by its self after its finished uploading.
+        public void StopService() { }
     }
 }
-#endif

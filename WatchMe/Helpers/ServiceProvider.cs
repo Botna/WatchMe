@@ -1,6 +1,6 @@
 ﻿namespace WatchMe.Helpers
 {
-    internal static class CurrentServiceProvider
+    public static class CurrentServiceProvider
     {
         public static IServiceProvider Services
         {
