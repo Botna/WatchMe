@@ -54,12 +54,13 @@
 		<PackageReference Include="Azure.Identity" Version="1.13.1" />
 		<PackageReference Include="Azure.Storage.Blobs" Version="12.23.0" />
 		<PackageReference Include="CommunityToolkit.Maui" Version="9.1.1" />
-		<PackageReference Include="FFMpegCore" Version="5.4.0" />
+		<PackageReference Include="LibVLCSharp.MAUI" Version="3.9.5" />
 		<PackageReference Include="Microsoft.Maui.Controls" Version="8.0.100" />
 		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.100" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
 		<PackageReference Include="Plugin.Maui.ScreenRecording" Version="1.0.0-preview2" />
 		<PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
+		<PackageReference Include="VideoLAN.LibVLC.Android" Version="3.6.5" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -18,8 +18,10 @@ namespace WatchMe
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
+                .UseLibVLCSharp()
                 .UseMauiCommunityToolkit()
                 .UseMauiCameraView()
+
                 .UseScreenRecording()
                 .ConfigureFonts(fonts =>
                 {
