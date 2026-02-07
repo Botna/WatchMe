@@ -431,7 +431,7 @@ internal class MauiCameraView : GridLayout
             catch { }
             try
             {
-                cameraDevice?.Close();
+                cameraDevice?.Close(); 
                 cameraDevice?.Dispose();
             }
             catch { }

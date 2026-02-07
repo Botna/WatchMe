@@ -64,7 +64,7 @@ namespace WatchMe.Services
 
             }
 
-            await StartRecordingAsync(CameraPosition.Front, _frontVideoFileName);
+            //await StartRecordingAsync(CameraPosition.Front, _frontVideoFileName);
             await StartRecordingAsync(CameraPosition.Back, _backVideoFileName);
 
             _serviceDispatcher.StartVUFS();
@@ -103,28 +103,28 @@ namespace WatchMe.Services
         public async Task StopRecordingProcedure()
         {
             //_videoUploadForegroundService.StopVUFS();
-            var frontCameraStopTask = _cameraWrapper.StopCameraAsync(CameraPosition.Front);
-            var backCameraStopTask = _cameraWrapper.StopCameraAsync(CameraPosition.Back);
+            //await _cameraWrapper.StopCameraAsync(CameraPosition.Front);
+            await _cameraWrapper.StopCameraAsync(CameraPosition.Back);
 
-            await backCameraStopTask;
+            //await backCameraStopTask;
             var backVideoBytesTask = _fileSystemService.MoveVideoToGallery(_backVideoFileName);
 
-            await frontCameraStopTask;
-            var frontVideoBytesTask = _fileSystemService.MoveVideoToGallery(_frontVideoFileName);
+            //await frontCameraStopTask;
+            //var frontVideoBytesTask = _fileSystemService.MoveVideoToGallery(_frontVideoFileName);
 
-            await Task.WhenAll(frontVideoBytesTask, backVideoBytesTask);
+            await Task.WhenAll(/*frontVideoBytesTask*/ backVideoBytesTask);
 
-            var frontVideo = await _videosRepository.GetVideosByVideoName(_frontVideoFileName);
-            frontVideo.TotalBytes = (await frontVideoBytesTask).Count();
-            frontVideo.VideoState = VideoStates.Finished.ToString();
+            //var frontVideo = await _videosRepository.GetVideosByVideoName(_frontVideoFileName);
+            //frontVideo.TotalBytes = (await frontVideoBytesTask).Count();
+            //frontVideo.VideoState = VideoStates.Finished.ToString();
 
             var backVideo = await _videosRepository.GetVideosByVideoName(_backVideoFileName);
             backVideo.TotalBytes = (await backVideoBytesTask).Count();
             backVideo.VideoState = VideoStates.Finished.ToString();
 
-            await _videosRepository.UpdateTotalBytesOfVideo(frontVideo.Id, frontVideo.TotalBytes);
+            //await _videosRepository.UpdateTotalBytesOfVideo(frontVideo.Id, frontVideo.TotalBytes);
             await _videosRepository.UpdateTotalBytesOfVideo(backVideo.Id, backVideo.TotalBytes);
-            await _videosRepository.UpdateStateOfVideos(VideoStates.Finished, frontVideo.Id, backVideo.Id);
+            await _videosRepository.UpdateStateOfVideos(VideoStates.Finished,backVideo.Id);
 
 
             //var recordsUpdated = await _videosRepository.UpdateVideosAsync(frontVideo, backVideo);
