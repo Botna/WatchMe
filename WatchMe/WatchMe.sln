@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.8.34330.188
+# Visual Studio Version 18
+VisualStudioVersion = 18.3.11505.172 d18.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WatchMe", "WatchMe.csproj", "{1A89E79F-D4D8-4762-B326-E6CA96BAD968}"
 EndProject
@@ -10,8 +10,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WatchMe.UITests.Android", "..\WatchMe.UITests.Android\WatchMe.UITests.Android.csproj", "{A95EE64D-5395-41D8-9D1A-B78ED73F8EFC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WatchMe.UITests.Shared", "..\WatchMe.UiTests.Shared\WatchMe.UITests.Shared.csproj", "{498A4D1E-F1D3-43CB-ABCA-BD6EA16DEDB2}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WatchMe.Camera", "..\WatchMe.Camera\WatchMe.Camera.csproj", "{C65259DD-21DE-4707-A908-6CCA3925936D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,10 +35,6 @@ Global
 		{498A4D1E-F1D3-43CB-ABCA-BD6EA16DEDB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{498A4D1E-F1D3-43CB-ABCA-BD6EA16DEDB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{498A4D1E-F1D3-43CB-ABCA-BD6EA16DEDB2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C65259DD-21DE-4707-A908-6CCA3925936D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C65259DD-21DE-4707-A908-6CCA3925936D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C65259DD-21DE-4707-A908-6CCA3925936D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C65259DD-21DE-4707-A908-6CCA3925936D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
